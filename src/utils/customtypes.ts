@@ -14,6 +14,13 @@ export type TRegionTranslation = {
   tr?: string
 }
 
+export interface Region {
+  id: number;
+  name: string;
+  translations: unknown;
+  wikiDataId: string | null;
+}
+
 export type TCountry =     {
   id: number | string,
   name: string,
@@ -33,18 +40,11 @@ export type TCountry =     {
   subregion_id: string | null,
   nationality: string,
   timezones?: Array<TTimezone> | null,
-  translations: TTranslaction,
+  translations: TTranslation,
   latitude: string,
   longitude: string,
   emoji: string,
   emojiU: string
-}
-
-export type TRegion =     {
-  id: number,
-  name: string,
-  translations: TRegionTranslation,
-  wikiDataId: string
 }
 
 export type TSubregion =     {
@@ -54,8 +54,6 @@ export type TSubregion =     {
   translations: TSubregionTranslation
   wikiDataId: string
 }
-
-export type TCountryWithIncludes = TCountry & { regionData?: TRegion, subregionData?: TSubregion}
 
 export type TState =     {
   id: number,
@@ -68,8 +66,6 @@ export type TState =     {
   latitude: number,
   longitude: number
 }
-
-export type TStateWithIncludes = TState & { country?: TCountryWithIncludes }
 
 export type TSubregionTranslation = {
   korean: string;
@@ -85,7 +81,7 @@ export type TSubregionTranslation = {
   chinese: string;
 }
 
-export type TTranslaction = { kr?: string; "pt-BR"?: string; pt?: string; fa?: string; de?: string; fr?: string; it?: string; cn?: string; tr?: string; nl?: string | undefined; hr?: string; es?: string; ja?: string; }
+export type TTranslation = { kr?: string; "pt-BR"?: string; pt?: string; fa?: string; de?: string; fr?: string; it?: string; cn?: string; tr?: string; nl?: string | undefined; hr?: string; es?: string; ja?: string; }
 
 export type TTimezone = {
   zoneName: string,
@@ -108,5 +104,3 @@ export type TCity = {
   longitude: string,
   wikiDataId: string
 }
-
-export type TCityWithIncludes = TCity & {state?: TStateWithIncludes, country?: TCountryWithIncludes}
