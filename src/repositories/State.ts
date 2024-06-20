@@ -1,42 +1,9 @@
-import { like, eq, sql, asc, desc, count, and, or, relations, SQLWrapper } from "drizzle-orm";
-import { QueryBuilder, SQLiteSelectQueryBuilder, SQLiteSelectQueryBuilderBase } from "drizzle-orm/sqlite-core";
+import { like, eq, sql, asc, desc, count, and, or, SQLWrapper } from "drizzle-orm";
+import { SQLiteSelectQueryBuilder } from "drizzle-orm/sqlite-core";
 import { db } from "../db";
-import { state, country, region, city } from "../db/schema";
+import { state, country, city } from "../db/schema";
 import { CommonSQLite } from "./Common";
-
-interface State {
-  id: number;
-  name: string;
-  country_id: number;
-  country_code: string;
-  country_name: string;
-  state_code: string;
-  type: string | null;
-  latitude: number;
-  longitude: number;
-}
-
-interface StateFilter {
-  id?: number;
-  name?: string;
-  country_id?: number;
-  country_code?: string;
-  country_name?: string;
-  state_code?: string;
-  type?: string;
-  operation?: 'and' | 'or'
-}
-
-interface StateInclude {
-  cities?: boolean;
-  country?: boolean;
-  count?: boolean;
-}
-
-interface StateSort {
-  field: keyof State;
-  direction: 'asc' | 'desc';
-}
+import { State, StateFilter, StateSort, StateInclude } from "../utils/customtypes";
 
 export class StateRepository extends CommonSQLite {
   db = db
@@ -52,8 +19,11 @@ export class StateRepository extends CommonSQLite {
    * const newState = await stateRepository.createState('State Name', '{}', 'wikiDataId1');
    * console.log('New State:', newSubstate);
    */
-  async createState(name: string, country_id: number, country_code: string, country_name: string, state_code: string, latitude: number, longitude: number, type?: string ): Promise<State> {
-    const [newState] = await this.db.insert(this.table).values({ name, country_id, country_code, country_name, state_code, latitude, longitude }).returning();
+  async createState(name: string, country_id: number, state_code: string, latitude: number, longitude: number, type?: string ): Promise<State> {
+    const foundCountry = await this.db.query.country.findFirst({where: eq(country.id, country_id)})
+    if (!foundCountry) throw new Error(`Country with id '${country_id}' not found`);
+    const {iso2: country_code, name: country_name} = foundCountry
+    const [newState] = await this.db.insert(this.table).values({ name, country_id, country_code, country_name, state_code, latitude, longitude, type }).returning();
     return newState;
   }
 
@@ -137,8 +107,33 @@ export class StateRepository extends CommonSQLite {
     return result
   }
 
-  async findStateById(id: string | number, include?: StateInclude){
-
+/**
+ * Finds a state by its ID with optional related entities.
+ * @async {@link findStateById}
+ * @param {number} id - The ID of the state to find.
+ * @param {StateInclude} [include] - {@link StateInclude} Optional parameter to include related entities (country).
+ * @returns {Promise<{ data: any[], meta: { rawsql: string } }>} The state data along with optional related entities and raw SQL query.
+ * @example
+ * const sr = new StateRepository();
+ * const state = await sr.findStateById(1);
+ * // returns { data: State[], meta: {rawsql: string}}
+ * const stateWithIncludesAndCounts = await sr.findStateById(1, { country: true, count: true });
+ * // returns { data: StateWithIncludesAndCount[], meta: {rawsql: string}}
+ */
+  async findStateById(id: number, include?: StateInclude){
+    const qb = this.db;
+    let query = qb.select({
+      state: {
+        ...this.table, 
+        ...(include?.country ? {country} : {}) 
+      }
+    }).from(this.table).where(eq(state.id, id)).$dynamic();
+    if(include?.country){
+      query = query.leftJoin(country, eq(state.country_id, country.id))
+    }
+    const rawsql = query.toSQL()
+    const result = {data: include?.count ? (await query).map(({state}) => this.countRelatedEntities(state)).map(state => this.includeRelatedEntities(state, include)) : (await query).map(({state}) => this.includeRelatedEntities(state, include)), meta: {rawsql}}
+    return result
   }
 
     /**
@@ -153,7 +148,7 @@ export class StateRepository extends CommonSQLite {
       await db.update(this.table).set(updates).where(eq(this.table.id, id));
     }
 
-      /**
+  /**
    * Deletes a state.
    * @param {number} id - The ID of the state to delete.
    * @returns {Promise<void>}
@@ -184,21 +179,6 @@ export class StateRepository extends CommonSQLite {
     if (filter.type) conditions.push(like(state.type, `%${filter.type}%`))
     return conditions.length ? filterOperation(...conditions) : null;
   }
-
-  // /**
-  //  * Counts the number of related states and countries for a given state.
-  //  * @param {number} stateId - The ID of the state.
-  //  * @returns {Promise<{ statesCount: number, countriesCount: number }>} The count of related states and countries.
-  //  * @example
-  //  * const counts = await stateRepository.countRelatedEntities(1);
-  //  * console.log('Related Entities Count:', counts);
-  //  */
-  // async countRelatedEntities(regionId: number): Promise<{ statesCount: number, countriesCount: number }> {
-  //   const statesCount = await db.select(substate).where(eq(state.region_id, stateId)).count();
-  //   const countriesCount = await db.select(country).where(eq(country.region_id, stateId)).count();
-
-  //   return { statesCount, countriesCount };
-  // }
 
 /**
  * Counts the number of related states and countries for a given state.

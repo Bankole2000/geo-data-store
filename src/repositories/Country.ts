@@ -1,72 +1,9 @@
-import { like, eq, sql, asc, desc, count, and, or, relations, SQLWrapper } from "drizzle-orm";
-import { QueryBuilder, SQLiteSelectQueryBuilder, SQLiteSelectQueryBuilderBase } from "drizzle-orm/sqlite-core";
+import { like, eq, sql, asc, desc, count, and, or, SQLWrapper } from "drizzle-orm";
+import { SQLiteSelectQueryBuilder } from "drizzle-orm/sqlite-core";
 import { db } from "../db";
 import { city, country, region, state, subregion } from "../db/schema";
 import { CommonSQLite } from "./Common";
-import { TTimezone, TTranslation } from "../utils/customtypes";
-
-interface Country {
-  id: number;
-  name: string;
-  iso3: string;
-  iso2: string;
-  numeric_code: string;
-  phone_code: string;
-  capital: string;
-  currency: string;
-  currency_name: string;
-  currency_symbol: string;
-  tld: string;
-  native: string;
-  region_id: number;
-  subregion_id: number;
-  nationality: string;
-  timezones: Array<TTimezone> | null;
-  translations: TTranslation | null;
-  latitude: number;
-  longitude: number;
-  emoji: string;
-  emojiU: string;
-}
-
-interface CountryFilter {
-  id?: number;
-  name?: string;
-  iso3?: string;
-  iso2?: string;
-  numeric_code?: string;
-  phone_code?: string;
-  capital?: string;
-  currency?: string;
-  currency_name?: string;
-  currency_symbol?: string;
-  tld?: string;
-  native?: string;
-  region_id?: number;
-  subregion_id?: number;
-  nationality?: string;
-  latitude?: number;
-  longitude?: number;
-  operation?: 'and' | 'or';
-}
-
-interface CountrySort {
-  field: keyof Country;
-  direction: 'asc' | 'desc';
-}
-
-interface CountryInclude {
-  region?: boolean;
-  subregion?: boolean;
-  states?: boolean;
-  cities?: boolean;
-  count?: boolean;
-}
-
-interface CountrySort {
-  field: keyof Country;
-  direction: 'asc' | 'desc';
-}
+import { Country, CountryFilter, CountryInclude, CountrySort } from "../utils/customtypes";
 
 export class CountryRepository extends CommonSQLite {
   db = db
@@ -170,8 +107,38 @@ export class CountryRepository extends CommonSQLite {
     return result
   }
 
-  async findCountryById(id: string | number, include?: CountryInclude){
-
+  /**
+ * Finds a country by its ID with optional related entities.
+ * @async {@link findCountryById}
+ * @param {number} id - The ID of the country to find.
+ * @param {CountryInclude} [include] - {@link CountryInclude} Optional parameter to include related entities (region and/or subregion).
+ * @returns {Promise<{ data: any[], meta: { rawsql: string } }>} The country data along with optional related entities and raw SQL query.
+ * @example
+ * const cr = new CountryRepository()
+ * const country = await cr.findCountryById(1);
+ * // returns { data: Country[], meta: {rawsql: string}}
+ * const countryWithIncludesAndCounts = await cr
+ * .findCountryById(1, { region: true, subregion: true, count: true })
+ * // returns { data: CountryWithIncludesAndCount[], meta: {rawsql: string}}
+ */
+  async findCountryById(id: number, include?: CountryInclude){
+    const qb = this.db;
+    let query = qb.select({
+      country: {
+        ...this.table, 
+        ...(include?.region ? {region} : {}),
+        ...(include?.subregion ? {subregion} : {}) 
+      }
+    }).from(this.table).where(eq(country.id, id)).$dynamic();
+    if(include?.region){
+      query = query.leftJoin(region, eq(country.region_id, region.id))
+    }
+    if(include?.subregion){
+      query = query.leftJoin(subregion, eq(country.subregion_id, subregion.id))
+    }
+    const rawsql = query.toSQL()
+    const result = {data: include?.count ? (await query).map(({country}) => this.countRelatedEntities(country)).map(country => this.includeRelatedEntities(country, include)) : (await query).map(({country}) => this.includeRelatedEntities(country, include)), meta: {rawsql}}
+    return result
   }
 
     /**
@@ -226,21 +193,6 @@ export class CountryRepository extends CommonSQLite {
     return conditions.length ? filterOperation(...conditions) : null;
   }
 
-  // /**
-  //  * Counts the number of related countrys and countries for a given country.
-  //  * @param {number} countryId - The ID of the country.
-  //  * @returns {Promise<{ countrysCount: number, countriesCount: number }>} The count of related countrys and countries.
-  //  * @example
-  //  * const counts = await countryRepository.countRelatedEntities(1);
-  //  * console.log('Related Entities Count:', counts);
-  //  */
-  // async countRelatedEntities(regionId: number): Promise<{ countrysCount: number, countriesCount: number }> {
-  //   const countrysCount = await db.select(subcountry).where(eq(country.region_id, countryId)).count();
-  //   const countriesCount = await db.select(country).where(eq(country.region_id, countryId)).count();
-
-  //   return { countrysCount, countriesCount };
-  // }
-
 /**
  * Counts the number of related countrys and countries for a given country.
  * @param {number} countryId - The ID of the country.
@@ -266,6 +218,16 @@ export class CountryRepository extends CommonSQLite {
     return { id, ...rest, stateCount, cityCount };
   }
 
+  /**
+ * Includes related entities (states and cities) for a given country.
+ * @param {{ id: number }} country - The country object with ID.
+ * @param {CountryInclude} [include] - {@link CountryInclude} Optional parameter to include related entities (states and/or cities).
+ * @returns {{ id: number, states: any[], cities: any[] }} The country object with included related entities.
+ * @example
+ * const cr = new CountryRepository();
+ * const countryWithRelatedEntities = cr.includeRelatedEntities({ id: 1, name: 'Country' }, { states: true, cities: true });
+ * // returns { id: 1, name: 'Country', states: State[], cities: City[] }
+ */
   includeRelatedEntities({id, ...rest}: {id: number}, include?: CountryInclude){
     const states = include?.states ? db
       .select()

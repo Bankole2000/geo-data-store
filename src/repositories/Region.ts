@@ -3,36 +3,11 @@ import { SQLiteSelectQueryBuilder } from "drizzle-orm/sqlite-core";
 import { db } from "../db";
 import { region, country, subregion } from "../db/schema";
 import { CommonSQLite } from "./Common";
-import { Region, TRegionTranslation } from "../utils/customtypes";
-
-interface RegionFilter {
-  name?: string;
-  wikiDataId?: string;
-  operation?: 'and' | 'or'
-}
-
-interface RegionInclude {
-  subregions?: boolean;
-  countries?: boolean;
-  count?: boolean;
-}
-
-interface RegionSort {
-  field: keyof Region;
-  direction: 'asc' | 'desc';
-}
+import { Region, RegionFilter, RegionInclude, RegionSort, TRegionTranslation } from "../utils/customtypes";
 
 export class RegionRepository extends CommonSQLite {
   db = db
   table = region
-  select = { 
-    id: region.id, 
-    name: region.name,
-    wikiDataId: region.wikiDataId,
-    translation: region.translations,
-    // countryCount: sql<number>`cast(count('${country.region_id}') as int)`,
-    // total: count(region.id),
-  }
   
   /**
    * Creates a new region.
@@ -74,7 +49,9 @@ export class RegionRepository extends CommonSQLite {
   ) {
     const qb = this.db;
     let query = qb.select({
-      ...this.select, 
+      region: {
+        ...this.table, 
+      }
     }).from(this.table).$dynamic();
     if (filter) {
       query = this.addFilters(query, filter)
@@ -84,7 +61,7 @@ export class RegionRepository extends CommonSQLite {
     query = query.orderBy(direction(this.table[sort.field]));
     const total = (filter ? await db.select({count: count()}).from(this.table).where(this.getWhereOptions(filter)!) : await db.select({count: count()}).from(this.table))[0].count
     const rawsql = query.toSQL()
-    const result = {data: include?.count && total ? (await query).map(this.countRelatedEntities) : (await query), meta: {filter, orderBy: sort, page, limit, total, pages: Math.ceil(total/limit), rawsql}}
+    const result = {data: include?.count && total ? (await query).map(({region}) => this.countRelatedEntities) : (await query), meta: {filter, orderBy: sort, page, limit, total, pages: Math.ceil(total/limit), rawsql}}
     return result
   }
 
@@ -96,7 +73,9 @@ export class RegionRepository extends CommonSQLite {
   }){
     const qb = this.db;
     let query = qb.select({
-      ...this.select, 
+      region: {
+        ...this.table
+      }
     }).from(this.table).$dynamic();
     if (filter) {
       query = this.addFilters(query, filter)
@@ -105,16 +84,33 @@ export class RegionRepository extends CommonSQLite {
     query = query.orderBy(direction(this.table[sort.field]));
     const total = (filter ? await db.select({count: count()}).from(this.table).where(this.getWhereOptions(filter)!) : await db.select({count: count()}).from(this.table))[0].count
     const rawsql = query.toSQL()
-    // let data = include?.count ? (await query).map(this.countRelatedEntities) : (await query)
-    // if(include?.countries || include?.subregions){
-    //   data = data.map(x => this.includeRelatedEntities(x, include))
-    // }
-    const result = {data: include?.count && total ? (await query).map(this.countRelatedEntities).map(x => this.includeRelatedEntities(x, include)) : (await query).map(x => this.includeRelatedEntities(x, include)), meta: {filter, orderBy: sort, total, rawsql}}
+    const result = {data: include?.count && total ? (await query).map(({region}) => this.countRelatedEntities(region)).map(region => this.includeRelatedEntities(region, include)) : (await query).map(({region}) => this.includeRelatedEntities(region, include)), meta: {filter, orderBy: sort, total, rawsql}}
     return result
   }
 
-  async findRegionById(id: string | number, include?: RegionInclude){
-
+  /**
+ * Finds a region by its ID with optional related entities.
+ * @async {@link findRegionById}
+ * @param {number} id - The ID of the region to find.
+ * @param {RegionInclude} [include] - {@link RegionInclude} Optional parameter to include related entities.
+ * @returns {Promise<{ data: any[], meta: { rawsql: string } }>} The region data along with optional related entities and raw SQL query.
+ * @example
+ * const rr = new RegionRepository();
+ * const region = await rr.findRegionById(1);
+ * // returns { data: Region[], meta: {rawsql: string}}
+ * const regionWithIncludesAndCounts = await rr.findRegionById(1, { count: true });
+ * // returns { data: RegionWithIncludesAndCount[], meta: {rawsql: string}}
+ */
+  async findRegionById(id: number, include?: RegionInclude){
+    const qb = this.db;
+    let query = qb.select({
+      region: {
+        ...this.table,
+      }
+    }).from(this.table).where(eq(region.id, id)).$dynamic();
+    const rawsql = query.toSQL()
+    const result = {data: include?.count ? (await query).map(({region}) => this.countRelatedEntities(region)).map(region => this.includeRelatedEntities(region, include)) : (await query).map(({region}) => this.includeRelatedEntities(region, include)), meta: {rawsql}}
+    return result
   }
 
     /**
@@ -155,21 +151,6 @@ export class RegionRepository extends CommonSQLite {
     if (filter.wikiDataId) conditions.push(eq(region.wikiDataId, filter.wikiDataId))
     return conditions.length ? filterOperation(...conditions) : null;
   }
-
-  // /**
-  //  * Counts the number of related subregions and countries for a given region.
-  //  * @param {number} regionId - The ID of the region.
-  //  * @returns {Promise<{ subregionsCount: number, countriesCount: number }>} The count of related subregions and countries.
-  //  * @example
-  //  * const counts = await regionRepository.countRelatedEntities(1);
-  //  * console.log('Related Entities Count:', counts);
-  //  */
-  // async countRelatedEntities(regionId: number): Promise<{ subregionsCount: number, countriesCount: number }> {
-  //   const subregionsCount = await db.select(subregion).where(eq(subregion.region_id, regionId)).count();
-  //   const countriesCount = await db.select(country).where(eq(country.region_id, regionId)).count();
-
-  //   return { subregionsCount, countriesCount };
-  // }
 
   /**
    * Counts the number of related subregions and countries for a given region.

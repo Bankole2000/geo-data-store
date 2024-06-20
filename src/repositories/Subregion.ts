@@ -1,47 +1,13 @@
-import { like, eq, sql, asc, desc, count, and, or, relations, SQLWrapper } from "drizzle-orm";
-import { QueryBuilder, SQLiteSelectQueryBuilder, SQLiteSelectQueryBuilderBase } from "drizzle-orm/sqlite-core";
+import { like, eq, sql, asc, desc, count, and, or, SQLWrapper } from "drizzle-orm";
+import { SQLiteSelectQueryBuilder } from "drizzle-orm/sqlite-core";
 import { db } from "../db";
 import { subregion, country, region } from "../db/schema";
 import { CommonSQLite } from "./Common";
-
-interface Subregion {
-  id: number;
-  name: string;
-  translations: unknown;
-  region_id: number;
-  wikiDataId: string | null;
-}
-
-interface SubregionFilter {
-  name?: string;
-  wikiDataId?: string;
-  region_id?: number;
-  operation?: 'and' | 'or'
-}
-
-interface SubregionInclude {
-  region?: boolean;
-  countries?: boolean;
-  count?: boolean;
-}
-
-interface SubregionSort {
-  field: keyof Subregion;
-  direction: 'asc' | 'desc';
-}
+import { Subregion, SubregionFilter, SubregionSort, SubregionInclude } from "../utils/customtypes";
 
 export class SubregionRepository extends CommonSQLite {
   db = db
   table = subregion
-  select = { 
-    id: subregion.id, 
-    name: subregion.name,
-    wikiDataId: subregion.wikiDataId,
-    translation: subregion.translations,
-    region_id: subregion.region_id,
-    countryCount: sql<number>`cast(count('${country.subregion_id}') as int)`,
-    // total: count(region.id),
-  }
   
   /**
    * Creates a new subregion.
@@ -85,7 +51,6 @@ export class SubregionRepository extends CommonSQLite {
     let query = qb.select({
       subregion: {
         ...this.table,
-        // countryCount: sql<number>`cast(count('${country.subregion_id}') as int)`,
         ...(include?.region ? {region} : {})
       },
     }).from(this.table).$dynamic();
@@ -100,7 +65,10 @@ export class SubregionRepository extends CommonSQLite {
     query = query.orderBy(direction(subregion[sort.field]));
     const total = (filter ? await db.select({count: count()}).from(this.table).where(this.getWhereOptions(filter)!) : await db.select({count: count()}).from(this.table))[0].count
     const rawsql = query.toSQL()
-    const result = {data: include?.count ? (await query).map(({subregion}) => this.countRelatedEntities(subregion)) : (await query).map(({subregion}) => subregion), meta: {filter, orderBy: sort, page, limit, total, pages: Math.ceil(total/limit), rawsql}}
+    const result = {
+      data: include?.count && total ? (await query).map(({subregion}) => this.countRelatedEntities(subregion)).map(subregion => this.includeRelatedEntities(subregion, include)) : (await query).map(({subregion}) => this.includeRelatedEntities(subregion, include)), 
+      meta: {filter, orderBy: sort, page, limit, total, pages: Math.ceil(total/limit), rawsql}
+    }
     // const result = {data: include?.count ? (await query).map(({subregion}) => subregion) : (await query).map(({subregion}) => subregion), meta: {filter, orderBy: sort, page, limit, total, pages: Math.ceil(total/limit), rawsql}}
     return result
   }
@@ -121,16 +89,44 @@ export class SubregionRepository extends CommonSQLite {
     if (filter) {
       query = this.addFilters(query, filter)
     }
+    if(include?.region){
+      query = query.leftJoin(region, eq(subregion.region_id, region.id))
+    }
     const direction = sort.direction === 'asc' ? asc : desc
     query = query.orderBy(direction(this.table[sort.field]));
     const total = (filter ? await db.select({count: count()}).from(this.table).where(this.getWhereOptions(filter)!) : await db.select({count: count()}).from(this.table))[0].count
     const rawsql = query.toSQL()
-    const result = {data: include?.count ? (await query).map(({subregion}) => this.countRelatedEntities(subregion)) : (await query).map(({subregion}) => subregion), meta: {filter, orderBy: sort, total, rawsql}}
+    const result = {data: include?.count && total ? (await query).map(({subregion}) => this.countRelatedEntities(subregion)).map(subregion => this.includeRelatedEntities(subregion, include)) : (await query).map(({subregion}) => this.includeRelatedEntities(subregion, include)), meta: {filter, orderBy: sort, total, rawsql}}
     return result
   }
 
-  async findSubregionById(id: string | number, include?: SubregionInclude){
-
+/**
+ * Finds a subregion by its ID with optional related entities.
+ * @async {@link findSubregionById}
+ * @param {number} id - The ID of the subregion to find.
+ * @param {SubregionInclude} [include] - {@link SubregionInclude} Optional parameter to include related entities (region).
+ * @returns {Promise<{ data: any[], meta: { rawsql: string } }>} The subregion data along with optional related entities and raw SQL query.
+ * @example
+ * const sr = new SubregionRepository();
+ * const subregion = await sr.findSubregionById(1);
+ * // returns { data: Subregion[], meta: {rawsql: string}}
+ * const subregionWithIncludesAndCounts = await sr.findSubregionById(1, { region: true, count: true });
+ * // returns { data: SubregionWithIncludesAndCount[], meta: {rawsql: string}}
+ */
+  async findSubregionById(id: number, include?: SubregionInclude){
+    const qb = this.db;
+    let query = qb.select({
+      subregion: {
+        ...this.table, 
+        ...(include?.region ? {region} : {}) 
+      }
+    }).from(this.table).where(eq(subregion.id, id)).$dynamic();
+    if(include?.region){
+      query = query.leftJoin(region, eq(subregion.region_id, region.id))
+    }
+    const rawsql = query.toSQL()
+    const result = {data: include?.count ? (await query).map(({subregion}) => this.countRelatedEntities(subregion)).map(subregion => this.includeRelatedEntities(subregion, include)) : (await query).map(({subregion}) => this.includeRelatedEntities(subregion, include)), meta: {rawsql}}
+    return result
   }
 
     /**
@@ -173,21 +169,6 @@ export class SubregionRepository extends CommonSQLite {
     return conditions.length ? filterOperation(...conditions) : null;
   }
 
-  // /**
-  //  * Counts the number of related subregions and countries for a given subregion.
-  //  * @param {number} subregionId - The ID of the subregion.
-  //  * @returns {Promise<{ subregionsCount: number, countriesCount: number }>} The count of related subregions and countries.
-  //  * @example
-  //  * const counts = await subregionRepository.countRelatedEntities(1);
-  //  * console.log('Related Entities Count:', counts);
-  //  */
-  // async countRelatedEntities(regionId: number): Promise<{ subregionsCount: number, countriesCount: number }> {
-  //   const subregionsCount = await db.select(subsubregion).where(eq(subregion.region_id, subregionId)).count();
-  //   const countriesCount = await db.select(country).where(eq(country.region_id, subregionId)).count();
-
-  //   return { subregionsCount, countriesCount };
-  // }
-
 /**
  * Counts the number of related subregions and countries for a given subregion.
  * @param {number} subregionId - The ID of the subregion.
@@ -206,12 +187,12 @@ export class SubregionRepository extends CommonSQLite {
     return { id, ...rest, countryCount };
   }
 
-  includeRelatedEntities({id, ...rest}: {id: number}){
-    const countries = db
+  includeRelatedEntities({id, ...rest}: {id: number}, include?: SubregionInclude){
+    const countries = include?.countries ? db
       .select()
       .from(country)
       .where(eq(country.region_id, id))
-      .all();
+      .all() : [];
     return { id, ...rest, countries };
   }
 }

@@ -1,45 +1,9 @@
-import { like, eq, sql, asc, desc, count, and, or, relations, SQLWrapper } from "drizzle-orm";
-import { QueryBuilder, SQLiteSelectQueryBuilder, SQLiteSelectQueryBuilderBase } from "drizzle-orm/sqlite-core";
+import { like, eq, asc, desc, count, and, or, SQLWrapper } from "drizzle-orm";
+import { SQLiteSelectQueryBuilder } from "drizzle-orm/sqlite-core";
 import { db } from "../db";
-import { city, country, region, state } from "../db/schema";
+import { city, country, state } from "../db/schema";
 import { CommonSQLite } from "./Common";
-
-interface City {
-  id: number;
-  name: string;
-  state_id: number;
-  state_code: string;
-  state_name: string;
-  country_id: number;
-  country_code: string;
-  country_name: string;
-  latitude: number;
-  longitude: number;
-  wikiDataId: string | null;
-}
-
-interface CityFilter {
-  id?: number;
-  name?: string;
-  state_id?: number;
-  state_code?: string;
-  state_name?: string;
-  country_id?: number;
-  country_code?: string;
-  country_name?: string;
-  wikiDataId?: string;
-  operation?: 'and' | 'or'
-}
-
-interface CityInclude {
-  state?: boolean;
-  country?: boolean;
-}
-
-interface CitySort {
-  field: keyof City;
-  direction: 'asc' | 'desc';
-}
+import { City, CityFilter, CityInclude, CitySort } from "../utils/customtypes";
 
 export class CityRepository extends CommonSQLite {
   db = db
@@ -55,7 +19,10 @@ export class CityRepository extends CommonSQLite {
    * const newCity = await cityRepository.createCity('City Name', '{}', 'wikiDataId1');
    * console.log('New City:', newSubcity);
    */
-  async createCity(name: string, state_id: number, country_id: number, state_code: string, state_name: string, country_code: string, country_name: string, latitude: number, longitude: number, wikiDataId: string | null = null): Promise<City> {
+  async createCity(name: string, state_id: number, latitude: number, longitude: number, wikiDataId: string | null = null): Promise<City> {
+    const foundState = await this.db.query.state.findFirst({where: eq(state.id, state_id)})
+    if (!foundState) throw new Error(`State with id '${state_id}' not found`);
+    const {country_code, country_id, country_name, state_code, name: state_name} = foundState
     const [newCity] = await this.db.insert(this.table).values({ name, state_id, country_id, country_code, country_name, state_code, state_name, wikiDataId, latitude, longitude }).returning();
     return newCity;
   }
@@ -87,7 +54,6 @@ export class CityRepository extends CommonSQLite {
     let query = qb.select({
       city: {
         ...this.table,
-        // countryCount: sql<number>`cast(count('${country.city_id}') as int)`,
         ...(include?.state ? {state} : {}),
         ...(include?.country ? {country} : {})
       },
@@ -142,8 +108,37 @@ export class CityRepository extends CommonSQLite {
     return result
   }
 
-  async findCityById(id: string | number, include?: CityInclude){
-
+/**
+ * Finds a city by its ID with optional related entities.
+ * @async {@link findCityById}
+ * @param {number} id - The ID of the city to find.
+ * @param {CityInclude} [include] - {@link CityInclude} Optional parameter to include related entities (country and/or state).
+ * @returns {Promise<{ data: any[], meta: { rawsql: string } }>} The city data along with optional related entities and raw SQL query.
+ * @example
+ * const cr = new CityRepository();
+ * const city = await cr.findCityById(1);
+ * // returns { data: City[], meta: {rawsql: string}}
+ * const cityWithIncludes = await cr.findCityById(1, { country: true, state: true });
+ * // returns { data: CityWithIncludes[], meta: {rawsql: string}}
+ */
+  async findCityById(id: number, include?: CityInclude){
+    const qb = this.db;
+    let query = qb.select({
+      city: {
+        ...this.table, 
+        ...(include?.country ? {country} : {}),
+        ...(include?.state ? {state} : {})
+      }
+    }).from(this.table).where(eq(city.id, id)).$dynamic();
+    if(include?.country){
+      query = query.leftJoin(country, eq(city.country_id, country.id))
+    }
+    if(include?.state){
+      query = query.leftJoin(state, eq(city.state_id, state.id))
+    }
+    const rawsql = query.toSQL()
+    const result = {data:  (await query).map(({city}) => city), meta: {rawsql}}
+    return result
   }
 
     /**
@@ -191,48 +186,6 @@ export class CityRepository extends CommonSQLite {
     if (filter.country_code) conditions.push(eq(city.country_code, filter.country_code))
     return conditions.length ? filterOperation(...conditions) : null;
   }
-
-  // /**
-  //  * Counts the number of related citys and countries for a given city.
-  //  * @param {number} cityId - The ID of the city.
-  //  * @returns {Promise<{ citysCount: number, countriesCount: number }>} The count of related citys and countries.
-  //  * @example
-  //  * const counts = await cityRepository.countRelatedEntities(1);
-  //  * console.log('Related Entities Count:', counts);
-  //  */
-  // async countRelatedEntities(regionId: number): Promise<{ citysCount: number, countriesCount: number }> {
-  //   const citysCount = await db.select(subcity).where(eq(city.region_id, cityId)).count();
-  //   const countriesCount = await db.select(country).where(eq(country.region_id, cityId)).count();
-
-  //   return { citysCount, countriesCount };
-  // }
-
-/**
- * Counts the number of related citys and countries for a given city.
- * @param {number} cityId - The ID of the city.
- * @returns {Promise<{ citysCount: number, countriesCount: number }>} The count of related citys and countries.
- * @example
- * const counts = cityRepository.countRelatedEntities({region_id: 1});
- * console.log('Related Entities Count:', counts);
- */
-  // countRelatedEntities({id, ...rest}: {id: number}) {
-  //   const countryCountResult = db
-  //     .select({ count: sql`COUNT(*)` })
-  //     .from(country)
-  //     .where(eq(country.city_id, id))
-  //     .all();
-  //   const countryCount = countryCountResult[0].count;
-  //   return { id, ...rest, countryCount };
-  // }
-
-  // includeRelatedEntities({id, ...rest}: {id: number}){
-  //   const countries = db
-  //     .select()
-  //     .from(country)
-  //     .where(eq(country.region_id, id))
-  //     .all();
-  //   return { id, ...rest, countries };
-  // }
 }
 
 export const cityRepository = new CityRepository()
