@@ -1,6 +1,21 @@
 "use strict";
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __exportStar = (this && this.__exportStar) || function(m, exports) {
+    for (var p in m) if (p !== "default" && !Object.prototype.hasOwnProperty.call(exports, p)) __createBinding(exports, m, p);
+};
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.subregionRelations = exports.subregion = exports.stateRelations = exports.state = exports.regionRelations = exports.countryRelations = exports.country = exports.cityRelations = exports.city = exports.region = exports.db = exports.sumDistinct = exports.sum = exports.or = exports.min = exports.max = exports.isNull = exports.isNotNull = exports.ilike = exports.notIlike = exports.notLike = exports.notBetween = exports.notExists = exports.exists = exports.createOne = exports.createMany = exports.between = exports.arrayContained = exports.notInArray = exports.inArray = exports.arrayOverlaps = exports.arrayContains = exports.like = exports.and = exports.avgDistinct = exports.avg = exports.countDistinct = exports.count = exports.desc = exports.asc = exports.not = exports.sql = exports.ne = exports.gte = exports.gt = exports.lte = exports.lt = exports.eq = void 0;
+exports.RegionRepository = exports.regionRepository = exports.subregionRelations = exports.subregion = exports.stateRelations = exports.state = exports.regionRelations = exports.countryRelations = exports.country = exports.cityRelations = exports.city = exports.region = exports.db = exports.sumDistinct = exports.sum = exports.or = exports.min = exports.max = exports.isNull = exports.isNotNull = exports.ilike = exports.notIlike = exports.notLike = exports.notBetween = exports.notExists = exports.exists = exports.createOne = exports.createMany = exports.between = exports.arrayContained = exports.notInArray = exports.inArray = exports.arrayOverlaps = exports.arrayContains = exports.like = exports.and = exports.avgDistinct = exports.avg = exports.countDistinct = exports.count = exports.desc = exports.asc = exports.not = exports.sql = exports.ne = exports.gte = exports.gt = exports.lte = exports.lt = exports.eq = void 0;
+exports.calculateDistanceBetweenPoints = exports.findEntitiesWithinRadius = exports.findClosestCity = exports.findClosestCities = exports.CityRepository = exports.cityRepository = exports.StateRepository = exports.stateRepository = exports.CountryRepository = exports.countryRepository = exports.SubregionRepository = exports.subregionRepository = void 0;
 var drizzle_orm_1 = require("drizzle-orm");
 Object.defineProperty(exports, "eq", { enumerable: true, get: function () { return drizzle_orm_1.eq; } });
 Object.defineProperty(exports, "lt", { enumerable: true, get: function () { return drizzle_orm_1.lt; } });
@@ -52,19 +67,24 @@ Object.defineProperty(exports, "state", { enumerable: true, get: function () { r
 Object.defineProperty(exports, "stateRelations", { enumerable: true, get: function () { return schema_1.stateRelations; } });
 Object.defineProperty(exports, "subregion", { enumerable: true, get: function () { return schema_1.subregion; } });
 Object.defineProperty(exports, "subregionRelations", { enumerable: true, get: function () { return schema_1.subregionRelations; } });
-// import {TCityWithIncludes, cities, getCityById, findCitiesByFxn} from './cities';
-// export {TCountry, TCountryWithIncludes, countries, getCountryById} from './countries';
-// export {TRegion, TSubregion, regions, subregions, getRegionById, getSubregionById} from './regions';
-// export {TState, TStateWithIncludes, getStateById, states} from './states';
-// const result = getCityById(1, {country: false, state: false})
-// console.log({something: 1});
-// import { like } from 'drizzle-orm';
-// import regionsJSON from './data/regions.json';
-// import { setupDefaults } from './utils/helperFxns';
-// (async () => {
-//   // const result = await db.query.region.findFirst({with: {countries: true, subregions: true}})
-//   // console.log({result});
-//   // await insertNewRegion()
-//   await setupDefaults()
-//   // console.log({region: Object.keys(region)})
-// })()
+var Region_1 = require("./repositories/Region");
+Object.defineProperty(exports, "regionRepository", { enumerable: true, get: function () { return Region_1.regionRepository; } });
+Object.defineProperty(exports, "RegionRepository", { enumerable: true, get: function () { return Region_1.RegionRepository; } });
+var Subregion_1 = require("./repositories/Subregion");
+Object.defineProperty(exports, "subregionRepository", { enumerable: true, get: function () { return Subregion_1.subregionRepository; } });
+Object.defineProperty(exports, "SubregionRepository", { enumerable: true, get: function () { return Subregion_1.SubregionRepository; } });
+var Country_1 = require("./repositories/Country");
+Object.defineProperty(exports, "countryRepository", { enumerable: true, get: function () { return Country_1.countryRepository; } });
+Object.defineProperty(exports, "CountryRepository", { enumerable: true, get: function () { return Country_1.CountryRepository; } });
+var State_1 = require("./repositories/State");
+Object.defineProperty(exports, "stateRepository", { enumerable: true, get: function () { return State_1.stateRepository; } });
+Object.defineProperty(exports, "StateRepository", { enumerable: true, get: function () { return State_1.StateRepository; } });
+var City_1 = require("./repositories/City");
+Object.defineProperty(exports, "cityRepository", { enumerable: true, get: function () { return City_1.cityRepository; } });
+Object.defineProperty(exports, "CityRepository", { enumerable: true, get: function () { return City_1.CityRepository; } });
+var geolocationFxns_1 = require("./geolocationFxns");
+Object.defineProperty(exports, "findClosestCities", { enumerable: true, get: function () { return geolocationFxns_1.findClosestCities; } });
+Object.defineProperty(exports, "findClosestCity", { enumerable: true, get: function () { return geolocationFxns_1.findClosestCity; } });
+Object.defineProperty(exports, "findEntitiesWithinRadius", { enumerable: true, get: function () { return geolocationFxns_1.findEntitiesWithinRadius; } });
+Object.defineProperty(exports, "calculateDistanceBetweenPoints", { enumerable: true, get: function () { return geolocationFxns_1.haversine; } });
+__exportStar(require("./utils/customtypes"), exports);

@@ -5,7 +5,7 @@ const sqlite_core_1 = require("drizzle-orm/sqlite-core");
 const drizzle_orm_1 = require("drizzle-orm");
 exports.region = (0, sqlite_core_1.sqliteTable)("region", {
     id: (0, sqlite_core_1.integer)("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
-    name: (0, sqlite_core_1.text)("name", { mode: 'text' }),
+    name: (0, sqlite_core_1.text)("name", { mode: 'text' }).notNull(),
     translations: (0, sqlite_core_1.text)("translations", { mode: "json" }),
     wikiDataId: (0, sqlite_core_1.text)("wikiDataId", { mode: 'text' }),
 });
@@ -15,8 +15,8 @@ exports.regionRelations = (0, drizzle_orm_1.relations)(exports.region, ({ many }
 }));
 exports.subregion = (0, sqlite_core_1.sqliteTable)("subregion", {
     id: (0, sqlite_core_1.integer)("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
-    name: (0, sqlite_core_1.text)("name", { mode: 'text' }),
-    region_id: (0, sqlite_core_1.integer)("region_id", { mode: "number" }).references(() => exports.region.id),
+    name: (0, sqlite_core_1.text)("name", { mode: 'text' }).notNull(),
+    region_id: (0, sqlite_core_1.integer)("region_id", { mode: "number" }).references(() => exports.region.id).notNull(),
     translations: (0, sqlite_core_1.text)("translations", { mode: "json" }),
     wikiDataId: (0, sqlite_core_1.text)("wikiDataId", { mode: 'text' }),
 });
@@ -29,26 +29,26 @@ exports.subregionRelations = (0, drizzle_orm_1.relations)(exports.subregion, ({ 
 }));
 exports.country = (0, sqlite_core_1.sqliteTable)("country", {
     id: (0, sqlite_core_1.integer)("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
-    name: (0, sqlite_core_1.text)("name", { mode: 'text' }),
-    iso3: (0, sqlite_core_1.text)("iso3", { mode: 'text', length: 3 }),
-    iso2: (0, sqlite_core_1.text)("iso2", { mode: 'text', length: 2 }),
-    numeric_code: (0, sqlite_core_1.text)("numeric_code", { mode: 'text' }),
-    phone_code: (0, sqlite_core_1.text)("phone_code", { mode: 'text' }),
-    capital: (0, sqlite_core_1.text)("capital", { mode: 'text' }),
-    currency: (0, sqlite_core_1.text)("currency", { mode: 'text', length: 3 }),
-    currency_name: (0, sqlite_core_1.text)("currency_name", { mode: 'text' }),
-    currency_symbol: (0, sqlite_core_1.text)("currency_symbol", { mode: 'text' }),
-    tld: (0, sqlite_core_1.text)("tld", { mode: 'text' }),
-    native: (0, sqlite_core_1.text)("native", { mode: 'text' }),
-    region_id: (0, sqlite_core_1.integer)("region_id", { mode: 'number' }).references(() => exports.region.id),
-    subregion_id: (0, sqlite_core_1.integer)("subregion_id", { mode: 'number' }).references(() => exports.subregion.id),
-    nationality: (0, sqlite_core_1.text)("nationality", { mode: 'text' }),
+    name: (0, sqlite_core_1.text)("name", { mode: 'text' }).notNull(),
+    iso3: (0, sqlite_core_1.text)("iso3", { mode: 'text', length: 3 }).notNull(),
+    iso2: (0, sqlite_core_1.text)("iso2", { mode: 'text', length: 2 }).notNull(),
+    numeric_code: (0, sqlite_core_1.text)("numeric_code", { mode: 'text' }).notNull(),
+    phone_code: (0, sqlite_core_1.text)("phone_code", { mode: 'text' }).notNull(),
+    capital: (0, sqlite_core_1.text)("capital", { mode: 'text' }).notNull(),
+    currency: (0, sqlite_core_1.text)("currency", { mode: 'text', length: 3 }).notNull(),
+    currency_name: (0, sqlite_core_1.text)("currency_name", { mode: 'text' }).notNull(),
+    currency_symbol: (0, sqlite_core_1.text)("currency_symbol", { mode: 'text' }).notNull(),
+    tld: (0, sqlite_core_1.text)("tld", { mode: 'text' }).notNull(),
+    native: (0, sqlite_core_1.text)("native", { mode: 'text' }).notNull(),
+    region_id: (0, sqlite_core_1.integer)("region_id", { mode: 'number' }).references(() => exports.region.id).notNull(),
+    subregion_id: (0, sqlite_core_1.integer)("subregion_id", { mode: 'number' }).references(() => exports.subregion.id).notNull(),
+    nationality: (0, sqlite_core_1.text)("nationality", { mode: 'text' }).notNull(),
     timezones: (0, sqlite_core_1.text)("timezones", { mode: "json" }).$type(),
     translations: (0, sqlite_core_1.text)("translations", { mode: "json" }).$type(),
-    latitude: (0, sqlite_core_1.real)("latitude"),
-    longitude: (0, sqlite_core_1.real)("longitude"),
-    emoji: (0, sqlite_core_1.text)("emoji", { mode: 'text' }),
-    emojiU: (0, sqlite_core_1.text)("emojiU", { mode: 'text' }),
+    latitude: (0, sqlite_core_1.real)("latitude").notNull(),
+    longitude: (0, sqlite_core_1.real)("longitude").notNull(),
+    emoji: (0, sqlite_core_1.text)("emoji", { mode: 'text' }).notNull(),
+    emojiU: (0, sqlite_core_1.text)("emojiU", { mode: 'text' }).notNull(),
 });
 exports.countryRelations = (0, drizzle_orm_1.relations)(exports.country, ({ one, many }) => ({
     region: one(exports.region, {
@@ -64,14 +64,14 @@ exports.countryRelations = (0, drizzle_orm_1.relations)(exports.country, ({ one,
 }));
 exports.state = (0, sqlite_core_1.sqliteTable)("state", {
     id: (0, sqlite_core_1.integer)("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
-    name: (0, sqlite_core_1.text)("name", { mode: 'text' }),
-    country_id: (0, sqlite_core_1.integer)("country_id", { mode: "number" }).references(() => exports.country.id),
-    country_code: (0, sqlite_core_1.text)("country_code", { mode: 'text', length: 2 }),
-    country_name: (0, sqlite_core_1.text)("country_name", { mode: 'text' }),
-    state_code: (0, sqlite_core_1.text)("state_code", { mode: 'text', length: 3 }),
+    name: (0, sqlite_core_1.text)("name", { mode: 'text' }).notNull(),
+    country_id: (0, sqlite_core_1.integer)("country_id", { mode: "number" }).references(() => exports.country.id).notNull(),
+    country_code: (0, sqlite_core_1.text)("country_code", { mode: 'text', length: 2 }).notNull(),
+    country_name: (0, sqlite_core_1.text)("country_name", { mode: 'text' }).notNull(),
+    state_code: (0, sqlite_core_1.text)("state_code", { mode: 'text', length: 3 }).notNull(),
     type: (0, sqlite_core_1.text)("type", { mode: "text" }),
-    latitude: (0, sqlite_core_1.real)("latitude"),
-    longitude: (0, sqlite_core_1.real)("longitude"),
+    latitude: (0, sqlite_core_1.real)("latitude").notNull(),
+    longitude: (0, sqlite_core_1.real)("longitude").notNull(),
 });
 exports.stateRelations = (0, drizzle_orm_1.relations)(exports.state, ({ one, many }) => ({
     country: one(exports.country, {
@@ -82,15 +82,15 @@ exports.stateRelations = (0, drizzle_orm_1.relations)(exports.state, ({ one, man
 }));
 exports.city = (0, sqlite_core_1.sqliteTable)("city", {
     id: (0, sqlite_core_1.integer)("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
-    name: (0, sqlite_core_1.text)("name", { mode: 'text' }),
-    state_id: (0, sqlite_core_1.integer)("state_id", { mode: "number" }).references(() => exports.state.id),
-    state_code: (0, sqlite_core_1.text)("state_code", { mode: "text" }),
-    state_name: (0, sqlite_core_1.text)("state_name", { mode: "text" }),
-    country_id: (0, sqlite_core_1.integer)("country_id", { mode: "number" }).references(() => exports.country.id),
-    country_code: (0, sqlite_core_1.text)("country_code", { mode: 'text', length: 2 }),
-    country_name: (0, sqlite_core_1.text)("country_name", { mode: 'text' }),
-    latitude: (0, sqlite_core_1.real)("latitude"),
-    longitude: (0, sqlite_core_1.real)("longitude"),
+    name: (0, sqlite_core_1.text)("name", { mode: 'text' }).notNull(),
+    state_id: (0, sqlite_core_1.integer)("state_id", { mode: "number" }).references(() => exports.state.id).notNull(),
+    state_code: (0, sqlite_core_1.text)("state_code", { mode: "text" }).notNull(),
+    state_name: (0, sqlite_core_1.text)("state_name", { mode: "text" }).notNull(),
+    country_id: (0, sqlite_core_1.integer)("country_id", { mode: "number" }).references(() => exports.country.id).notNull(),
+    country_code: (0, sqlite_core_1.text)("country_code", { mode: 'text', length: 2 }).notNull(),
+    country_name: (0, sqlite_core_1.text)("country_name", { mode: 'text' }).notNull(),
+    latitude: (0, sqlite_core_1.real)("latitude").notNull(),
+    longitude: (0, sqlite_core_1.real)("longitude").notNull(),
     wikiDataId: (0, sqlite_core_1.text)("wikiDataId", { mode: 'text' }),
 });
 exports.cityRelations = (0, drizzle_orm_1.relations)(exports.city, ({ one }) => ({

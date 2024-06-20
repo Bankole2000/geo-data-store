@@ -1,4 +1,4 @@
-import { TTimezone, TTranslaction } from '../utils/customtypes';
+import { TTimezone, TTranslation } from '../utils/customtypes';
 export declare const region: import("drizzle-orm/sqlite-core").SQLiteTableWithColumns<{
     name: "region";
     schema: undefined;
@@ -22,7 +22,7 @@ export declare const region: import("drizzle-orm/sqlite-core").SQLiteTableWithCo
             columnType: "SQLiteText";
             data: string;
             driverParam: string;
-            notNull: false;
+            notNull: true;
             hasDefault: false;
             enumValues: [string, ...string[]];
             baseColumn: never;
@@ -81,7 +81,7 @@ export declare const subregion: import("drizzle-orm/sqlite-core").SQLiteTableWit
             columnType: "SQLiteText";
             data: string;
             driverParam: string;
-            notNull: false;
+            notNull: true;
             hasDefault: false;
             enumValues: [string, ...string[]];
             baseColumn: never;
@@ -93,7 +93,7 @@ export declare const subregion: import("drizzle-orm/sqlite-core").SQLiteTableWit
             columnType: "SQLiteInteger";
             data: number;
             driverParam: number;
-            notNull: false;
+            notNull: true;
             hasDefault: false;
             enumValues: undefined;
             baseColumn: never;
@@ -126,7 +126,7 @@ export declare const subregion: import("drizzle-orm/sqlite-core").SQLiteTableWit
     dialect: "sqlite";
 }>;
 export declare const subregionRelations: import("drizzle-orm").Relations<"subregion", {
-    region: import("drizzle-orm").One<"region", false>;
+    region: import("drizzle-orm").One<"region", true>;
     countries: import("drizzle-orm").Many<"country">;
 }>;
 export declare const country: import("drizzle-orm/sqlite-core").SQLiteTableWithColumns<{
@@ -152,7 +152,7 @@ export declare const country: import("drizzle-orm/sqlite-core").SQLiteTableWithC
             columnType: "SQLiteText";
             data: string;
             driverParam: string;
-            notNull: false;
+            notNull: true;
             hasDefault: false;
             enumValues: [string, ...string[]];
             baseColumn: never;
@@ -164,7 +164,7 @@ export declare const country: import("drizzle-orm/sqlite-core").SQLiteTableWithC
             columnType: "SQLiteText";
             data: string;
             driverParam: string;
-            notNull: false;
+            notNull: true;
             hasDefault: false;
             enumValues: [string, ...string[]];
             baseColumn: never;
@@ -176,7 +176,7 @@ export declare const country: import("drizzle-orm/sqlite-core").SQLiteTableWithC
             columnType: "SQLiteText";
             data: string;
             driverParam: string;
-            notNull: false;
+            notNull: true;
             hasDefault: false;
             enumValues: [string, ...string[]];
             baseColumn: never;
@@ -188,7 +188,7 @@ export declare const country: import("drizzle-orm/sqlite-core").SQLiteTableWithC
             columnType: "SQLiteText";
             data: string;
             driverParam: string;
-            notNull: false;
+            notNull: true;
             hasDefault: false;
             enumValues: [string, ...string[]];
             baseColumn: never;
@@ -200,7 +200,7 @@ export declare const country: import("drizzle-orm/sqlite-core").SQLiteTableWithC
             columnType: "SQLiteText";
             data: string;
             driverParam: string;
-            notNull: false;
+            notNull: true;
             hasDefault: false;
             enumValues: [string, ...string[]];
             baseColumn: never;
@@ -212,7 +212,7 @@ export declare const country: import("drizzle-orm/sqlite-core").SQLiteTableWithC
             columnType: "SQLiteText";
             data: string;
             driverParam: string;
-            notNull: false;
+            notNull: true;
             hasDefault: false;
             enumValues: [string, ...string[]];
             baseColumn: never;
@@ -224,7 +224,7 @@ export declare const country: import("drizzle-orm/sqlite-core").SQLiteTableWithC
             columnType: "SQLiteText";
             data: string;
             driverParam: string;
-            notNull: false;
+            notNull: true;
             hasDefault: false;
             enumValues: [string, ...string[]];
             baseColumn: never;
@@ -236,7 +236,7 @@ export declare const country: import("drizzle-orm/sqlite-core").SQLiteTableWithC
             columnType: "SQLiteText";
             data: string;
             driverParam: string;
-            notNull: false;
+            notNull: true;
             hasDefault: false;
             enumValues: [string, ...string[]];
             baseColumn: never;
@@ -248,7 +248,7 @@ export declare const country: import("drizzle-orm/sqlite-core").SQLiteTableWithC
             columnType: "SQLiteText";
             data: string;
             driverParam: string;
-            notNull: false;
+            notNull: true;
             hasDefault: false;
             enumValues: [string, ...string[]];
             baseColumn: never;
@@ -260,7 +260,7 @@ export declare const country: import("drizzle-orm/sqlite-core").SQLiteTableWithC
             columnType: "SQLiteText";
             data: string;
             driverParam: string;
-            notNull: false;
+            notNull: true;
             hasDefault: false;
             enumValues: [string, ...string[]];
             baseColumn: never;
@@ -272,7 +272,7 @@ export declare const country: import("drizzle-orm/sqlite-core").SQLiteTableWithC
             columnType: "SQLiteText";
             data: string;
             driverParam: string;
-            notNull: false;
+            notNull: true;
             hasDefault: false;
             enumValues: [string, ...string[]];
             baseColumn: never;
@@ -284,7 +284,7 @@ export declare const country: import("drizzle-orm/sqlite-core").SQLiteTableWithC
             columnType: "SQLiteInteger";
             data: number;
             driverParam: number;
-            notNull: false;
+            notNull: true;
             hasDefault: false;
             enumValues: undefined;
             baseColumn: never;
@@ -296,7 +296,7 @@ export declare const country: import("drizzle-orm/sqlite-core").SQLiteTableWithC
             columnType: "SQLiteInteger";
             data: number;
             driverParam: number;
-            notNull: false;
+            notNull: true;
             hasDefault: false;
             enumValues: undefined;
             baseColumn: never;
@@ -308,7 +308,7 @@ export declare const country: import("drizzle-orm/sqlite-core").SQLiteTableWithC
             columnType: "SQLiteText";
             data: string;
             driverParam: string;
-            notNull: false;
+            notNull: true;
             hasDefault: false;
             enumValues: [string, ...string[]];
             baseColumn: never;
@@ -330,7 +330,7 @@ export declare const country: import("drizzle-orm/sqlite-core").SQLiteTableWithC
             tableName: "country";
             dataType: "json";
             columnType: "SQLiteTextJson";
-            data: TTranslaction;
+            data: TTranslation;
             driverParam: string;
             notNull: false;
             hasDefault: false;
@@ -344,7 +344,7 @@ export declare const country: import("drizzle-orm/sqlite-core").SQLiteTableWithC
             columnType: "SQLiteReal";
             data: number;
             driverParam: number;
-            notNull: false;
+            notNull: true;
             hasDefault: false;
             enumValues: undefined;
             baseColumn: never;
@@ -356,7 +356,7 @@ export declare const country: import("drizzle-orm/sqlite-core").SQLiteTableWithC
             columnType: "SQLiteReal";
             data: number;
             driverParam: number;
-            notNull: false;
+            notNull: true;
             hasDefault: false;
             enumValues: undefined;
             baseColumn: never;
@@ -368,7 +368,7 @@ export declare const country: import("drizzle-orm/sqlite-core").SQLiteTableWithC
             columnType: "SQLiteText";
             data: string;
             driverParam: string;
-            notNull: false;
+            notNull: true;
             hasDefault: false;
             enumValues: [string, ...string[]];
             baseColumn: never;
@@ -380,7 +380,7 @@ export declare const country: import("drizzle-orm/sqlite-core").SQLiteTableWithC
             columnType: "SQLiteText";
             data: string;
             driverParam: string;
-            notNull: false;
+            notNull: true;
             hasDefault: false;
             enumValues: [string, ...string[]];
             baseColumn: never;
@@ -389,8 +389,8 @@ export declare const country: import("drizzle-orm/sqlite-core").SQLiteTableWithC
     dialect: "sqlite";
 }>;
 export declare const countryRelations: import("drizzle-orm").Relations<"country", {
-    region: import("drizzle-orm").One<"region", false>;
-    subregion: import("drizzle-orm").One<"subregion", false>;
+    region: import("drizzle-orm").One<"region", true>;
+    subregion: import("drizzle-orm").One<"subregion", true>;
     states: import("drizzle-orm").Many<"state">;
     cities: import("drizzle-orm").Many<"city">;
 }>;
@@ -417,7 +417,7 @@ export declare const state: import("drizzle-orm/sqlite-core").SQLiteTableWithCol
             columnType: "SQLiteText";
             data: string;
             driverParam: string;
-            notNull: false;
+            notNull: true;
             hasDefault: false;
             enumValues: [string, ...string[]];
             baseColumn: never;
@@ -429,7 +429,7 @@ export declare const state: import("drizzle-orm/sqlite-core").SQLiteTableWithCol
             columnType: "SQLiteInteger";
             data: number;
             driverParam: number;
-            notNull: false;
+            notNull: true;
             hasDefault: false;
             enumValues: undefined;
             baseColumn: never;
@@ -441,7 +441,7 @@ export declare const state: import("drizzle-orm/sqlite-core").SQLiteTableWithCol
             columnType: "SQLiteText";
             data: string;
             driverParam: string;
-            notNull: false;
+            notNull: true;
             hasDefault: false;
             enumValues: [string, ...string[]];
             baseColumn: never;
@@ -453,7 +453,7 @@ export declare const state: import("drizzle-orm/sqlite-core").SQLiteTableWithCol
             columnType: "SQLiteText";
             data: string;
             driverParam: string;
-            notNull: false;
+            notNull: true;
             hasDefault: false;
             enumValues: [string, ...string[]];
             baseColumn: never;
@@ -465,7 +465,7 @@ export declare const state: import("drizzle-orm/sqlite-core").SQLiteTableWithCol
             columnType: "SQLiteText";
             data: string;
             driverParam: string;
-            notNull: false;
+            notNull: true;
             hasDefault: false;
             enumValues: [string, ...string[]];
             baseColumn: never;
@@ -489,7 +489,7 @@ export declare const state: import("drizzle-orm/sqlite-core").SQLiteTableWithCol
             columnType: "SQLiteReal";
             data: number;
             driverParam: number;
-            notNull: false;
+            notNull: true;
             hasDefault: false;
             enumValues: undefined;
             baseColumn: never;
@@ -501,7 +501,7 @@ export declare const state: import("drizzle-orm/sqlite-core").SQLiteTableWithCol
             columnType: "SQLiteReal";
             data: number;
             driverParam: number;
-            notNull: false;
+            notNull: true;
             hasDefault: false;
             enumValues: undefined;
             baseColumn: never;
@@ -510,7 +510,7 @@ export declare const state: import("drizzle-orm/sqlite-core").SQLiteTableWithCol
     dialect: "sqlite";
 }>;
 export declare const stateRelations: import("drizzle-orm").Relations<"state", {
-    country: import("drizzle-orm").One<"country", false>;
+    country: import("drizzle-orm").One<"country", true>;
     cities: import("drizzle-orm").Many<"city">;
 }>;
 export declare const city: import("drizzle-orm/sqlite-core").SQLiteTableWithColumns<{
@@ -536,7 +536,7 @@ export declare const city: import("drizzle-orm/sqlite-core").SQLiteTableWithColu
             columnType: "SQLiteText";
             data: string;
             driverParam: string;
-            notNull: false;
+            notNull: true;
             hasDefault: false;
             enumValues: [string, ...string[]];
             baseColumn: never;
@@ -548,7 +548,7 @@ export declare const city: import("drizzle-orm/sqlite-core").SQLiteTableWithColu
             columnType: "SQLiteInteger";
             data: number;
             driverParam: number;
-            notNull: false;
+            notNull: true;
             hasDefault: false;
             enumValues: undefined;
             baseColumn: never;
@@ -560,7 +560,7 @@ export declare const city: import("drizzle-orm/sqlite-core").SQLiteTableWithColu
             columnType: "SQLiteText";
             data: string;
             driverParam: string;
-            notNull: false;
+            notNull: true;
             hasDefault: false;
             enumValues: [string, ...string[]];
             baseColumn: never;
@@ -572,7 +572,7 @@ export declare const city: import("drizzle-orm/sqlite-core").SQLiteTableWithColu
             columnType: "SQLiteText";
             data: string;
             driverParam: string;
-            notNull: false;
+            notNull: true;
             hasDefault: false;
             enumValues: [string, ...string[]];
             baseColumn: never;
@@ -584,7 +584,7 @@ export declare const city: import("drizzle-orm/sqlite-core").SQLiteTableWithColu
             columnType: "SQLiteInteger";
             data: number;
             driverParam: number;
-            notNull: false;
+            notNull: true;
             hasDefault: false;
             enumValues: undefined;
             baseColumn: never;
@@ -596,7 +596,7 @@ export declare const city: import("drizzle-orm/sqlite-core").SQLiteTableWithColu
             columnType: "SQLiteText";
             data: string;
             driverParam: string;
-            notNull: false;
+            notNull: true;
             hasDefault: false;
             enumValues: [string, ...string[]];
             baseColumn: never;
@@ -608,7 +608,7 @@ export declare const city: import("drizzle-orm/sqlite-core").SQLiteTableWithColu
             columnType: "SQLiteText";
             data: string;
             driverParam: string;
-            notNull: false;
+            notNull: true;
             hasDefault: false;
             enumValues: [string, ...string[]];
             baseColumn: never;
@@ -620,7 +620,7 @@ export declare const city: import("drizzle-orm/sqlite-core").SQLiteTableWithColu
             columnType: "SQLiteReal";
             data: number;
             driverParam: number;
-            notNull: false;
+            notNull: true;
             hasDefault: false;
             enumValues: undefined;
             baseColumn: never;
@@ -632,7 +632,7 @@ export declare const city: import("drizzle-orm/sqlite-core").SQLiteTableWithColu
             columnType: "SQLiteReal";
             data: number;
             driverParam: number;
-            notNull: false;
+            notNull: true;
             hasDefault: false;
             enumValues: undefined;
             baseColumn: never;
@@ -653,6 +653,6 @@ export declare const city: import("drizzle-orm/sqlite-core").SQLiteTableWithColu
     dialect: "sqlite";
 }>;
 export declare const cityRelations: import("drizzle-orm").Relations<"city", {
-    state: import("drizzle-orm").One<"state", false>;
-    country: import("drizzle-orm").One<"country", false>;
+    state: import("drizzle-orm").One<"state", true>;
+    country: import("drizzle-orm").One<"country", true>;
 }>;
