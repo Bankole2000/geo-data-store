@@ -3,7 +3,7 @@ import { SQLiteSelectQueryBuilder } from "drizzle-orm/sqlite-core";
 import { db } from "../db";
 import { city, country, region, state, subregion } from "../db/schema";
 import { CommonSQLite } from "./Common";
-import { Country, CountryFilter, CountryInclude, CountrySort } from "../utils/customtypes";
+import { Country, CountryFilter, CountryInclude, CountryQueryOptions, CountrySort } from "../utils/customtypes";
 
 export class CountryRepository extends CommonSQLite {
   db = db
@@ -25,27 +25,24 @@ export class CountryRepository extends CommonSQLite {
   }
 
   /**
-   * Retrieves a paginated list of countrys.
+   * Retrieves a paginated list of countries.
    * @param {number} page - The page number to retrieve.
-   * @param {number} limit - The number of countrys per page.
+   * @param {number} limit - The number of countries per page.
    * @param {CountryFilter} [filter] - Filtering parameters.
    * @param {CountrySort} [sort] - Sorting parameters.
    * @param {CountryInclude} [include] - Sorting parameters.
-   * @param {boolean} [include.countrys=false] - Whether to include related countrys.
-   * @param {boolean} [include.countries=false] - Whether to include related countries.
-   * @returns {Promise<Country[]>} The list of countrys.
+   * @param {boolean} [include.states=false] - Whether to include related countries.
+   * @param {boolean} [include.cities=false] - Whether to include related countries.
+   * @returns {Promise<Country[]>} The list of countries.
    * @example
-   * const paginatedCountrys = await countryRepository.getCountrys(1, 10, { name: 'Country' }, { field: 'name', direction: 'asc' }, true, true);
-   * console.log('Paginated Countrys:', paginatedCountrys);
+   * const paginatedCountries = await countryRepository.getCountries(1, 10, { name: 'Country' }, { field: 'name', direction: 'asc' }, true, true);
+   * console.log('Paginated Countries:', paginatedCountries);
    */
-  async getCountrys({page = 1, limit = 10, filter = {}, sort = { field: 'id', direction: 'asc' }, include = {}} :
+  async getCountries({page = 1, limit = 10, filter = {}, sort = { field: 'id', direction: 'asc' }, include = {}} :
     {
       page?: number,
       limit?: number,
-      filter?: CountryFilter,
-      sort?: CountrySort,
-      include?: CountryInclude
-    }
+    } & CountryQueryOptions
   ) {
     const qb = this.db;
     let query = qb.select({
@@ -73,12 +70,7 @@ export class CountryRepository extends CommonSQLite {
     return result
   }
 
-  async getAllCountrys({filter={}, sort = {field: 'id', direction: 'asc'}, include = {}}: 
-  {
-    filter?: CountryFilter,
-    sort?: CountrySort,
-    include?: CountryInclude
-  }){
+  async getAllCountries({filter={}, sort = {field: 'id', direction: 'asc'}, include = {}}: CountryQueryOptions){
     const qb = this.db;
     let query = qb.select({
       country: {
@@ -194,9 +186,9 @@ export class CountryRepository extends CommonSQLite {
   }
 
 /**
- * Counts the number of related countrys and countries for a given country.
+ * Counts the number of related countries and countries for a given country.
  * @param {number} countryId - The ID of the country.
- * @returns {Promise<{ countrysCount: number, countriesCount: number }>} The count of related countrys and countries.
+ * @returns {Promise<{ countriesCount: number, countriesCount: number }>} The count of related countries and countries.
  * @example
  * const counts = countryRepository.countRelatedEntities({region_id: 1});
  * console.log('Related Entities Count:', counts);

@@ -3,7 +3,7 @@ import { SQLiteSelectQueryBuilder } from "drizzle-orm/sqlite-core";
 import { db } from "../db";
 import { subregion, country, region } from "../db/schema";
 import { CommonSQLite } from "./Common";
-import { Subregion, SubregionFilter, SubregionSort, SubregionInclude } from "../utils/customtypes";
+import { Subregion, SubregionFilter, SubregionSort, SubregionInclude, SubregionQueryOptions } from "../utils/customtypes";
 
 export class SubregionRepository extends CommonSQLite {
   db = db
@@ -42,10 +42,7 @@ export class SubregionRepository extends CommonSQLite {
     {
       page?: number,
       limit?: number,
-      filter?: SubregionFilter,
-      sort?: SubregionSort,
-      include?: SubregionInclude
-    }
+    } & SubregionQueryOptions
   ) {
     const qb = this.db;
     let query = qb.select({
@@ -73,12 +70,7 @@ export class SubregionRepository extends CommonSQLite {
     return result
   }
 
-  async getAllSubregions({filter={}, sort = {field: 'id', direction: 'asc'}, include = {}}: 
-  {
-    filter?: SubregionFilter,
-    sort?: SubregionSort,
-    include?: SubregionInclude
-  }){
+  async getAllSubregions({filter={}, sort = {field: 'id', direction: 'asc'}, include = {}}: SubregionQueryOptions){
     const qb = this.db;
     let query = qb.select({
       subregion: {

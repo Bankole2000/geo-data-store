@@ -18,6 +18,12 @@ export interface City {
   wikiDataId: string | null;
 }
 
+export interface CityQueryOptions {
+  filter?: CityFilter,
+  sort?: CitySort,
+  include?: CityInclude
+}
+
 export interface CityFilter {
   id?: number;
   name?: string;
@@ -64,6 +70,12 @@ export interface StateFilter {
   state_code?: string;
   type?: string;
   operation?: 'and' | 'or'
+}
+
+export interface StateQueryOptions {
+  filter?: StateFilter,
+  sort?: StateSort,
+  include?: StateInclude
 }
 
 export interface StateInclude {
@@ -136,6 +148,12 @@ export interface CountryInclude {
   cities?: boolean;
   count?: boolean;
 }
+
+export interface CountryQueryOptions {
+  filter?: CountryFilter,
+  sort?: CountrySort,
+  include?: CountryInclude
+}
 //#endregion
 
 //#region - region interfaces
@@ -154,6 +172,12 @@ export interface RegionInclude {
 export interface RegionSort {
   field: keyof Region;
   direction: 'asc' | 'desc';
+}
+
+export interface RegionQueryOptions {
+  filter?: RegionFilter,
+  sort?: RegionSort,
+  include?: RegionInclude
 }
 //#endregion
 
@@ -183,6 +207,12 @@ export interface SubregionInclude {
 export interface SubregionSort {
   field: keyof Subregion;
   direction: 'asc' | 'desc';
+}
+
+export interface SubregionQueryOptions {
+  filter?: SubregionFilter,
+  sort?: SubregionSort,
+  include?: SubregionInclude
 }
 //#endregion
 

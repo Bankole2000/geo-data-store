@@ -27,7 +27,11 @@
     "regions",
     "latlng"
   ],
-  "author": "",
+  "author": {
+    "name": "Bankole Esan",
+    "email": "techybanky@gmail.com",
+    "url": "https://github.com/Bankole2000/geo-data-store"
+  },
   "license": "ISC",
   "devDependencies": {
     "@commitlint/cli": "^19.3.0",
@@ -64,5 +68,9 @@
   "dependencies": {
     "better-sqlite3": "^11.0.0",
     "drizzle-orm": "^0.31.2"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:Bankole2000/geo-data-store.git"
   }
 }

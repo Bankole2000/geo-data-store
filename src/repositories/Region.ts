@@ -3,7 +3,7 @@ import { SQLiteSelectQueryBuilder } from "drizzle-orm/sqlite-core";
 import { db } from "../db";
 import { region, country, subregion } from "../db/schema";
 import { CommonSQLite } from "./Common";
-import { Region, RegionFilter, RegionInclude, RegionSort, TRegionTranslation } from "../utils/customtypes";
+import { Region, RegionFilter, RegionInclude, RegionQueryOptions, RegionSort, TRegionTranslation } from "../utils/customtypes";
 
 export class RegionRepository extends CommonSQLite {
   db = db
@@ -42,10 +42,7 @@ export class RegionRepository extends CommonSQLite {
     {
       page?: number,
       limit?: number,
-      filter?: RegionFilter,
-      sort?: RegionSort,
-      include?: RegionInclude
-    }
+    } & RegionQueryOptions
   ) {
     const qb = this.db;
     let query = qb.select({
@@ -65,12 +62,20 @@ export class RegionRepository extends CommonSQLite {
     return result
   }
 
-  async getAllRegions({filter={}, sort = {field: 'id', direction: 'asc'}, include = {}}: 
-  {
-    filter?: RegionFilter,
-    sort?: RegionSort,
-    include?: RegionInclude
-  }){
+/**
+ * Retrieves all regions with optional filtering, sorting, and inclusion of related entities.
+ * @async (new {@link RegionRepository}).{@link getAllRegions}()
+ * @param {Object} [options] - Options for filtering, sorting, and including related entities.
+ * @param {RegionFilter} [options.filter={}] - {@link RegionFilter} Filtering parameters.
+ * @param {RegionSort} [options.sort={field: 'id', direction: 'asc'}] - {@link RegionSort} Sorting parameters.
+ * @param {RegionInclude} [options.include={}] - {@link RegionInclude} Parameters to include related entities.
+ * @returns {Promise<{ data: any[], meta: { filter: RegionFilter, orderBy: RegionSort, total: number, rawsql: string } }>} The region data along with metadata including filter, order, total count, and raw SQL query.
+ * @example
+ * const rr = new RegionRepository();
+ * const regions = await rr.getAllRegions({ filter: { name: 'Region' }, sort: { field: 'name', direction: 'asc' }, include: { count: true } });
+ * // returns { data: Region[], meta: { filter: RegionFilter, orderBy: RegionSort, total: number, rawsql: string } }
+ */
+  async getAllRegions({filter={}, sort = {field: 'id', direction: 'asc'}, include = {}}: RegionQueryOptions){
     const qb = this.db;
     let query = qb.select({
       region: {

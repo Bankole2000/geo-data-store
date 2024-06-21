@@ -3,7 +3,7 @@ import { SQLiteSelectQueryBuilder } from "drizzle-orm/sqlite-core";
 import { db } from "../db";
 import { city, country, state } from "../db/schema";
 import { CommonSQLite } from "./Common";
-import { City, CityFilter, CityInclude, CitySort } from "../utils/customtypes";
+import { City, CityFilter, CityInclude, CityQueryOptions, CitySort } from "../utils/customtypes";
 
 export class CityRepository extends CommonSQLite {
   db = db
@@ -28,27 +28,31 @@ export class CityRepository extends CommonSQLite {
   }
 
   /**
-   * Retrieves a paginated list of citys.
-   * @param {number} page - The page number to retrieve.
-   * @param {number} limit - The number of citys per page.
-   * @param {CityFilter} [filter] - Filtering parameters.
-   * @param {CitySort} [sort] - Sorting parameters.
-   * @param {CityInclude} [include] - Sorting parameters.
-   * @param {boolean} [include.citys=false] - Whether to include related citys.
-   * @param {boolean} [include.countries=false] - Whether to include related countries.
-   * @returns {Promise<City[]>} The list of citys.
+   * Retrieves a paginated list of cities.
+   * @async (new {@link CityRepository}()).{@link getCities}({})
+   * @param {Object} options - Options for pagintion, filtering, sorting, and including related entities.
+   * @param {number} [options.limit] - The number of cities per page.
+   * @param {CityFilter} [options.filter] - {@link CityFilter} Filtering parameters.
+   * @param {CitySort} [options.sort] - {@link CitySort} Sorting parameters.
+   * @param {CityInclude} [options.include] - {@link CityInclude} Whether to include related resources.
+   * @param {boolean} [include.state=false] - Whether to include related state.
+   * @param {boolean} [include.country=false] - Whether to include related country.
+   * @returns {Promise<City[]>} - {data: City[], meta: any} - The list of cities.
    * @example
-   * const paginatedCitys = await cityRepository.getCitys(1, 10, { name: 'City' }, { field: 'name', direction: 'asc' }, true, true);
-   * console.log('Paginated Citys:', paginatedCitys);
+   * // Get cities in US whose name contains 'New'
+   * // Paginate and include Country + state data
+   * const paginatedCities = await cityRepository.getCities({
+   *    page: 1, limit: 10, 
+   *    filter: { name: 'New', country_code: 'US' }, 
+   *    sort = { field: 'name', direction: 'asc' }, 
+   *    include: {country: true, state: true}
+   * });
    */
-  async getCitys({page = 1, limit = 10, filter = {}, sort = { field: 'id', direction: 'asc' }, include = {}} :
+  async getCities({page = 1, limit = 10, filter = {}, sort = { field: 'id', direction: 'asc' }, include = {}} :
     {
       page?: number,
       limit?: number,
-      filter?: CityFilter,
-      sort?: CitySort,
-      include?: CityInclude
-    }
+    } & CityQueryOptions
   ) {
     const qb = this.db;
     let query = qb.select({
@@ -73,16 +77,10 @@ export class CityRepository extends CommonSQLite {
     const total = (filter ? await db.select({count: count()}).from(this.table).where(this.getWhereOptions(filter)!) : await db.select({count: count()}).from(this.table))[0].count
     const rawsql = query.toSQL()
     const result = {data: (await query).map(({city}) => city), meta: {filter, orderBy: sort, page, limit, total, pages: Math.ceil(total/limit), rawsql}}
-    // const result = {data: include?.count ? (await query).map(({city}) => city) : (await query).map(({city}) => city), meta: {filter, orderBy: sort, page, limit, total, pages: Math.ceil(total/limit), rawsql}}
     return result
   }
 
-  async getAllCitys({filter={}, sort = {field: 'id', direction: 'asc'}, include = {}}: 
-  {
-    filter?: CityFilter,
-    sort?: CitySort,
-    include?: CityInclude
-  }){
+  async getAllCities({filter={}, sort = {field: 'id', direction: 'asc'}, include = {}}: CityQueryOptions){
     const qb = this.db;
     let query = qb.select({
       city: {

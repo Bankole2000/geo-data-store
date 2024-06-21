@@ -3,7 +3,7 @@ import { SQLiteSelectQueryBuilder } from "drizzle-orm/sqlite-core";
 import { db } from "../db";
 import { state, country, city } from "../db/schema";
 import { CommonSQLite } from "./Common";
-import { State, StateFilter, StateSort, StateInclude } from "../utils/customtypes";
+import { State, StateFilter, StateSort, StateInclude, StateQueryOptions } from "../utils/customtypes";
 
 export class StateRepository extends CommonSQLite {
   db = db
@@ -45,16 +45,12 @@ export class StateRepository extends CommonSQLite {
     {
       page?: number,
       limit?: number,
-      filter?: StateFilter,
-      sort?: StateSort,
-      include?: StateInclude
-    }
+    } & StateQueryOptions
   ) {
     const qb = this.db;
     let query = qb.select({
       state: {
         ...this.table,
-        // countryCount: sql<number>`cast(count('${country.state_id}') as int)`,
         ...(include?.country ? {country} : {})
       },
     }).from(this.table).$dynamic();
@@ -77,12 +73,7 @@ export class StateRepository extends CommonSQLite {
     return result
   }
 
-  async getAllStates({filter={}, sort = {field: 'id', direction: 'asc'}, include = {}}: 
-  {
-    filter?: StateFilter,
-    sort?: StateSort,
-    include?: StateInclude
-  }){
+  async getAllStates({filter={}, sort = {field: 'id', direction: 'asc'}, include = {}}: StateQueryOptions){
     const qb = this.db;
     let query = qb.select({
       state: {
