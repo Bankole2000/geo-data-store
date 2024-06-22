@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.6](https://github.com/Bankole2000/geo-data-store/compare/v0.0.5...v0.0.6) (2024-06-22)
+
+
+### ✨ Features
+
+* added more utility fxn ([634bd4d](https://github.com/Bankole2000/geo-data-store/commits/634bd4ddfa8afe8ba52ee035102516f72d5db72f))
+
+
+### 📝 Documentation
+
+* updated read me ([0eaee4e](https://github.com/Bankole2000/geo-data-store/commits/0eaee4e5e08db13d1ffbd11747be12859c6926c5))
+* updated readme ([7e01eb3](https://github.com/Bankole2000/geo-data-store/commits/7e01eb3164563733ba1e1bfe5b59cf15a14846b7))
+
 ### [0.0.5](https://github.com/Bankole2000/geo-data-store/compare/v0.0.4...v0.0.5) (2024-06-22)
 
 
