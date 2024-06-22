@@ -15,7 +15,7 @@ var __exportStar = (this && this.__exportStar) || function(m, exports) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.RegionRepository = exports.regionRepository = exports.subregionRelations = exports.subregion = exports.stateRelations = exports.state = exports.regionRelations = exports.countryRelations = exports.country = exports.cityRelations = exports.city = exports.region = exports.db = exports.SUMDISTINCT = exports.SUM = exports.OR = exports.MIN = exports.MAX = exports.ISNULL = exports.ISNOTNULL = exports.ILIKE = exports.NOTILIKE = exports.NOTLIKE = exports.NOTBETWEEN = exports.NOTEXISTS = exports.EXISTS = exports.CREATEONE = exports.CREATEMANY = exports.BETWEEN = exports.ARRAYCONTAINED = exports.NOTINARRAY = exports.INARRAY = exports.ARRAYOVERLAPS = exports.ARRAYCONTAINS = exports.LIKE = exports.AND = exports.AVGDISTINCT = exports.AVG = exports.COUNTDISTINCT = exports.COUNT = exports.DESC = exports.ASC = exports.NOT = exports.SQL = exports.NE = exports.GTE = exports.GT = exports.LTE = exports.LT = exports.EQ = void 0;
-exports.calculateDistanceBetweenPoints = exports.findEntitiesWithinRadius = exports.findClosestCity = exports.findClosestCities = exports.CityRepository = exports.cityRepository = exports.StateRepository = exports.stateRepository = exports.CountryRepository = exports.countryRepository = exports.SubregionRepository = exports.subregionRepository = void 0;
+exports.calculateDistance = exports.findEntitiesWithinRadius = exports.findClosestCity = exports.findClosestCities = exports.CityRepository = exports.cityRepository = exports.StateRepository = exports.stateRepository = exports.CountryRepository = exports.countryRepository = exports.SubregionRepository = exports.subregionRepository = void 0;
 var drizzle_orm_1 = require("drizzle-orm");
 Object.defineProperty(exports, "EQ", { enumerable: true, get: function () { return drizzle_orm_1.eq; } });
 Object.defineProperty(exports, "LT", { enumerable: true, get: function () { return drizzle_orm_1.lt; } });
@@ -86,5 +86,5 @@ var geolocationFxns_1 = require("./geolocationFxns");
 Object.defineProperty(exports, "findClosestCities", { enumerable: true, get: function () { return geolocationFxns_1.findClosestCities; } });
 Object.defineProperty(exports, "findClosestCity", { enumerable: true, get: function () { return geolocationFxns_1.findClosestCity; } });
 Object.defineProperty(exports, "findEntitiesWithinRadius", { enumerable: true, get: function () { return geolocationFxns_1.findEntitiesWithinRadius; } });
-Object.defineProperty(exports, "calculateDistanceBetweenPoints", { enumerable: true, get: function () { return geolocationFxns_1.haversine; } });
+Object.defineProperty(exports, "calculateDistance", { enumerable: true, get: function () { return geolocationFxns_1.haversine; } });
 __exportStar(require("./utils/customtypes"), exports);

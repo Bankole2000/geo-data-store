@@ -26,7 +26,7 @@ export declare const UnitToWords: {
  * console.log(`Distance: ${distance} m`);
  * // returns Distance: 343.37 km (approx)
  */
-export declare const haversine: (point1: GeoPoint, point2: GeoPoint, unit?: keyof typeof EarthRadius) => {
+export declare const haversine: (point1: GeoPoint, point2: GeoPoint, unit?: DistanceUnit) => {
     distance: number;
     unit: string;
     unitInWords: string;
@@ -45,7 +45,7 @@ export declare const haversine: (point1: GeoPoint, point2: GeoPoint, unit?: keyo
  * const {city, country, state} = findClosestCity(point)
  * console.log({city, country, state});
  */
-export declare function findClosestCity(point: GeoPoint, unit?: keyof typeof EarthRadius): {
+export declare function findClosestCity(point: GeoPoint, unit?: DistanceUnit): {
     city?: any;
     state?: any;
     country?: any;
@@ -65,7 +65,7 @@ export declare function findClosestCity(point: GeoPoint, unit?: keyof typeof Ear
  * const {cities, countries, states} = findClosestCities(point, 5)
  * // returns City[5], State[], Country[]
  */
-export declare function findClosestCities(point: GeoPoint, limit: number, unit?: keyof typeof EarthRadius): {
+export declare function findClosestCities(point: GeoPoint, limit: number, unit?: DistanceUnit): {
     cities: {
         id: number;
         name: string;
@@ -96,7 +96,7 @@ export declare function findClosestCities(point: GeoPoint, limit: number, unit?:
  * // cities, states, and countries in a 30km radius
  * const { cities, states, countries } = findEntitiesWithinRadius({lat: 1, lng: 1}, 30)
  */
-export declare const findEntitiesWithinRadius: (point: GeoPoint, radius: number, unit?: keyof typeof EarthRadius) => {
+export declare const findEntitiesWithinRadius: (point: GeoPoint, radius: number, unit?: DistanceUnit) => {
     cities: {
         id: number;
         name: string;

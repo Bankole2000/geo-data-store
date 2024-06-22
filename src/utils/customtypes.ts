@@ -1,8 +1,23 @@
 import { city, country, region, state, subregion } from "../db/schema";
+import { EarthRadius } from "../geolocationFxns";
 
 export interface GeoPoint {
   lat: number;
   lng: number;
+}
+
+export type DistanceUnit = keyof typeof EarthRadius;
+
+export interface BoundingBox {
+  topLeft: GeoPoint;
+  bottomRight: GeoPoint;
+}
+
+export interface Vector {
+  angle: number;
+  distance: number;
+  unit: DistanceUnit;
+  unitInWords?: string;
 }
 
 export type BaseFilter = {

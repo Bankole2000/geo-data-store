@@ -6,5 +6,5 @@ export { subregionRepository, SubregionRepository } from './repositories/Subregi
 export { countryRepository, CountryRepository } from './repositories/Country';
 export { stateRepository, StateRepository } from './repositories/State';
 export { cityRepository, CityRepository } from './repositories/City';
-export { findClosestCities, findClosestCity, findEntitiesWithinRadius, haversine as calculateDistanceBetweenPoints } from './geolocationFxns';
+export { findClosestCities, findClosestCity, findEntitiesWithinRadius, haversine as calculateDistance, getBoundingBox, moveCoordsTo, calculateVectorDistance, isWithinBoundingBox, isWithinPolygon, isWithinRadius, getMidwayPoint, geoPointToTuple, tupleToGeoPoint, EarthRadius, UnitToWords } from './geolocationFxns';
 export * from './utils/customtypes'

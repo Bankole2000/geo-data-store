@@ -39,6 +39,7 @@
     "@eslint/eslintrc": "^3.0.2",
     "@eslint/js": "^9.1.1",
     "@types/better-sqlite3": "^7.6.10",
+    "@types/point-in-polygon": "^1.1.5",
     "@typescript-eslint/eslint-plugin": "^6.21.0",
     "drizzle-kit": "^0.22.7",
     "eslint": "^8.57.0",
@@ -67,7 +68,8 @@
   },
   "dependencies": {
     "better-sqlite3": "^11.0.0",
-    "drizzle-orm": "^0.31.2"
+    "drizzle-orm": "^0.31.2",
+    "point-in-polygon": "^1.1.0"
   },
   "repository": {
     "type": "git",
