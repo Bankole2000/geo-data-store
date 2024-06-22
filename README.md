@@ -2,6 +2,17 @@
 
 A Collection of utility functions, classes and data to help with building geolocation apps.
 
+<p float="left" align="middle">
+  <a href="https://www.e-education.psu.edu/natureofgeoinfo/c2_p11.html" target="_blank">
+  <img src="https://www.e-education.psu.edu/natureofgeoinfo/sites/www.e-education.psu.edu.natureofgeoinfo/files/image/long_lat.gif" alt="Latitude Longitude Illustration"  style="margin: 0px; margin-left: -200px;">
+  </a>
+</p>
+<p float="right" align="center" style="margin-left: -200px;">
+  <a href="https://www.e-education.psu.edu/natureofgeoinfo/c2_p11.html" target="_blank">
+  Geographic Coordinate System Primer
+  </a>
+</p>
+
 ## Features
 
 - Up-to-date and customizable database of **Regions** (continents), **Subregions**, **Countries**, **States**, and **Cities**.
@@ -26,7 +37,76 @@ npm install @neoncoder/geolocation-data
 
 ## Usage
 
-The `sqlite.db` consists of 5 tables - `Region`, `Subregion`, `Country`, `State`, `City`, all related with foreign keys. This package itself exposes 3 main resources:
+The `sqlite.db` consists of 5 tables - `Region`, `Subregion`, `Country`, `State`, `City`, all related with foreign keys and typed thus:
+
+```ts
+type Region = { // Major Regions (6)
+    id: number;
+    name: string;
+    translations: {[key: string]: string};
+    wikiDataId: string | null;
+}
+
+type Subregion = { // Geographical Zones (22)
+    id: number;
+    name: string;
+    region_id: number; // Foreign key referencing Region.id
+    translations: unknown;
+    wikiDataId: string | null;
+}
+
+type Country = { // Countries (250)
+    id: number;
+    name: string;
+    iso3: string; // Unique 3 char country code
+    iso2: string; // Unique 2 char country code
+    numeric_code: string;
+    phone_code: string;
+    capital: string; // Country's capital state / city
+    currency: string; // Unique 3 Char currency code e.g. USD
+    currency_name: string;
+    currency_symbol: string;
+    tld: string; // e.g. .co.uk, .za, .pl etc
+    native: string;
+    region_id: number; // Foreign key referencing Region.id
+    subregion_id: number; // Foreign key referencing Subregion.id
+    nationality: string;
+    timezones: Array<Timezone>
+    translations: {[key:string]: string}
+    latitude: number;
+    longitude: number;
+    emojiU: string;
+}
+
+type State = { // States (5084)
+    id: number;
+    name: string;
+    latitude: number;
+    longitude: number;
+    country_id: number; // Foreign key referencing Country.id
+    country_code: string; // Same as Country.iso2
+    country_name: string; // Same as Country.name
+    state_code: string; // Only unique within same Country
+    type: string | null;
+}
+
+type City = { // Cities (150634)
+    id: number;
+    name: string;
+    wikiDataId: string | null;
+    latitude: number;
+    longitude: number;
+    country_id: number; // Foreign key references Country.id
+    country_code: string; // same as Country.iso2
+    country_name: string; // same as Country.name
+    state_id: number; // Foreign key referencing State.id
+    state_code: string; // same as State.code
+    state_name: string; // same as State.name
+}
+```
+
+
+This package itself exposes 3 main resources:
 
 - _**Drizzle ORM insance `db`**_ - with schema and sql utility fxns for quering the database
 - _**Resource Classes**_ - with readable methods for typical use cases
@@ -232,73 +312,6 @@ import {
 ## Data structures
 
 Main resource types:
-
-```ts
-type Region = {
-    id: number;
-    name: string;
-    translations: {[key: string]: string};
-    wikiDataId: string | null;
-}
-
-type Subregion = {
-    id: number;
-    name: string;
-    region_id: number; // Foreign key referencing Region.id
-    translations: unknown;
-    wikiDataId: string | null;
-}
-
-type Country = {
-    id: number;
-    name: string;
-    iso3: string; // Unique 3 char country code
-    iso2: string; // Unique 2 char country code
-    numeric_code: string;
-    phone_code: string;
-    capital: string;
-    currency: string; // Unique 3 Char currency code e.g. USD
-    currency_name: string;
-    currency_symbol: string;
-    tld: string; // e.g. .co.uk, .za, .pl etc
-    native: string;
-    region_id: number; // Foreign key referencing Region.id
-    subregion_id: number; // Foreign key referencing Subregion.id
-    nationality: string;
-    timezones: Array<Timezone>
-    translations: {[key:string]: string}
-    latitude: number;
-    longitude: number;
-    emojiU: string;
-}
-
-type State = {
-    id: number;
-    name: string;
-    latitude: number;
-    longitude: number;
-    country_id: number; // Foreign key referencing Country.id
-    country_code: string; // Same as Country.iso2
-    country_name: string; // Same as Country.name
-    state_code: string; // Only unique within same Country
-    type: string | null;
-}
-
-type City = {
-    id: number;
-    name: string;
-    wikiDataId: string | null;
-    latitude: number;
-    longitude: number;
-    country_id: number; // Foreign key references Country.id
-    country_code: string; // same as Country.iso2
-    country_name: string; // same as Country.name
-    state_id: number; // Foreign key referencing State.id
-    state_code: string; // same as State.code
-    state_name: string; // same as State.name
-}
-```
-
 Other Utility Types:
 
 | Name | Structure        | Description         |
@@ -432,6 +445,14 @@ const geoPoint: GeoPoint = tupleToGeoPoint(tuple);
 const newTuple: number[] = geoPointToTuple(point);
 // [40.7128, -74.0060]
 ```
+
+### Backgroun Information - The Geographical coordinate system
+
+The location and orientation of ships and airplaines on the globe is typically expressed in terms of longitude, latitude, and heading.
+
+- **Longitude** (horizontal axis) is zero degrees at Greenwich, and varies from -180 degrees West to 180 degrees East.
+- **Latitude** (vertical axis) is 0 degrees at the equator, and varies from -90 degrees on the South pool to 90 degrees on the North pool.
+- **Heading** (aliased as the **_angle_** property of the `Vector` type in this project) varies from 0 to 360 degrees. North is 0 degrees, East is 90 degrees, South is 180 degrees, and West is 270 degrees. Visit [this link](https://www.e-education.psu.edu/natureofgeoinfo/c2_p11.html) for more details
 
 ## Acknowledgements
 
