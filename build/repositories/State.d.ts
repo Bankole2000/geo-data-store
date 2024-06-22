@@ -1,7 +1,8 @@
 import { SQLiteSelectQueryBuilder } from "drizzle-orm/sqlite-core";
+import { state } from "../db/schema";
 import { CommonSQLite } from "./Common";
-import { State, StateFilter, StateSort, StateInclude } from "../utils/customtypes";
-export declare class StateRepository extends CommonSQLite {
+import { State, StateFilter, StateSort, StateInclude, StateQueryOptions } from "../utils/customtypes";
+export declare class StateRepository extends CommonSQLite<typeof state> {
     db: import("drizzle-orm/better-sqlite3").BetterSQLite3Database<typeof import("../db/schema")>;
     table: import("drizzle-orm/sqlite-core").SQLiteTableWithColumns<{
         name: "state";
@@ -146,19 +147,16 @@ export declare class StateRepository extends CommonSQLite {
     getStates({ page, limit, filter, sort, include }: {
         page?: number;
         limit?: number;
-        filter?: StateFilter;
-        sort?: StateSort;
-        include?: StateInclude;
-    }): Promise<{
+    } & StateQueryOptions): Promise<{
         data: {
             id: number;
             name: string;
-            state_code: string;
             country_id: number;
-            country_code: string;
-            country_name: string;
             latitude: number;
             longitude: number;
+            country_code: string;
+            country_name: string;
+            state_code: string;
             type: string | null;
         }[] | {
             cityCount: unknown;
@@ -174,24 +172,33 @@ export declare class StateRepository extends CommonSQLite {
             rawsql: import("drizzle-orm").Query;
         };
     }>;
-    getAllStates({ filter, sort, include }: {
-        filter?: StateFilter;
-        sort?: StateSort;
-        include?: StateInclude;
-    }): Promise<{
+    /**
+     * Retrieves all states with optional filtering, sorting, and inclusion of related entities.
+     * @async await (new {@link StateRepository}()).{@link getAllStates}({})
+     * @param {StateQueryOptions} options - {@link StateQueryOptions} Options for filtering, sorting, and including related entities.
+     * @param {StateFilter} [options.filter={}] - {@link StateFilter} Filtering parameters.
+     * @param {StateSort} [options.sort={field: 'id', direction: 'asc'}] - {@link StateSort} Sorting parameters.
+     * @param {StateInclude} [options.include={}] - {@link StateInclude} Parameters to include related entities (country).
+     * @returns {Promise<{ data: any[], meta: { filter: StateFilter, orderBy: StateSort, total: number, rawsql: string } }>} The state data along with metadata including filter, order, total count, and raw SQL query.
+     * @example
+     * const sr = new StateRepository();
+     * const states = await sr.getAllStates({ filter: { name: 'State' }, sort: { field: 'name', direction: 'asc' }, include: { country: true, count: true } });
+     * // returns { data: State[], meta: { filter: StateFilter, orderBy: StateSort, total: number, rawsql: string } }
+     */
+    getAllStates({ filter, sort, include }: StateQueryOptions): Promise<{
         data: {
             cities: {
                 id: number;
                 name: string;
                 state_id: number;
-                state_code: string;
-                state_name: string;
                 country_id: number;
-                country_code: string;
-                country_name: string;
+                wikiDataId: string | null;
                 latitude: number;
                 longitude: number;
-                wikiDataId: string | null;
+                country_code: string;
+                country_name: string;
+                state_code: string;
+                state_name: string;
             }[];
             id: number;
         }[];
@@ -221,14 +228,14 @@ export declare class StateRepository extends CommonSQLite {
                 id: number;
                 name: string;
                 state_id: number;
-                state_code: string;
-                state_name: string;
                 country_id: number;
-                country_code: string;
-                country_name: string;
+                wikiDataId: string | null;
                 latitude: number;
                 longitude: number;
-                wikiDataId: string | null;
+                country_code: string;
+                country_name: string;
+                state_code: string;
+                state_name: string;
             }[];
             id: number;
         }[];
@@ -254,7 +261,6 @@ export declare class StateRepository extends CommonSQLite {
      */
     deleteState(id: number): Promise<void>;
     addFilters<T extends SQLiteSelectQueryBuilder>(qb: T, filter: StateFilter): T;
-    getWhereOptions(filter: StateFilter): import("drizzle-orm").SQL<unknown> | null | undefined;
     /**
      * Counts the number of related states and countries for a given state.
      * @param {number} stateId - The ID of the state.
@@ -276,14 +282,14 @@ export declare class StateRepository extends CommonSQLite {
             id: number;
             name: string;
             state_id: number;
-            state_code: string;
-            state_name: string;
             country_id: number;
-            country_code: string;
-            country_name: string;
+            wikiDataId: string | null;
             latitude: number;
             longitude: number;
-            wikiDataId: string | null;
+            country_code: string;
+            country_name: string;
+            state_code: string;
+            state_name: string;
         }[];
         id: number;
     };

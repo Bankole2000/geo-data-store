@@ -1,4 +1,14 @@
 import { GeoPoint } from "./utils/customtypes";
+export declare const EarthRadius: {
+    readonly km: 6371;
+    readonly m: 6371000;
+    readonly mi: 3958.8;
+};
+export declare const UnitToWords: {
+    readonly km: "kilometers";
+    readonly m: "meters";
+    readonly mi: "miles";
+};
 /**
  * Calculates the distance (in meters) between two points on the Earth's surface using the Haversine formula.
  * @function {@link haversine}
@@ -16,7 +26,11 @@ import { GeoPoint } from "./utils/customtypes";
  * console.log(`Distance: ${distance} m`);
  * // returns Distance: 343.37 km (approx)
  */
-export declare const haversine: (point1: GeoPoint, point2: GeoPoint) => number;
+export declare const haversine: (point1: GeoPoint, point2: GeoPoint, unit?: keyof typeof EarthRadius) => {
+    distance: number;
+    unit: string;
+    unitInWords: string;
+};
 /**
  * Finds the closest city, state, and country given a latitude and longitude.
  * @function {@link findClosestCity}
@@ -31,7 +45,7 @@ export declare const haversine: (point1: GeoPoint, point2: GeoPoint) => number;
  * const {city, country, state} = findClosestCity(point)
  * console.log({city, country, state});
  */
-export declare function findClosestCity(point: GeoPoint): {
+export declare function findClosestCity(point: GeoPoint, unit?: keyof typeof EarthRadius): {
     city?: any;
     state?: any;
     country?: any;
@@ -51,7 +65,7 @@ export declare function findClosestCity(point: GeoPoint): {
  * const {cities, countries, states} = findClosestCities(point, 5)
  * // returns City[5], State[], Country[]
  */
-export declare function findClosestCities(point: GeoPoint, limit: number): {
+export declare function findClosestCities(point: GeoPoint, limit: number, unit?: keyof typeof EarthRadius): {
     cities: {
         id: number;
         name: string;
@@ -63,6 +77,8 @@ export declare function findClosestCities(point: GeoPoint, limit: number): {
         country_name: string;
         latitude: number;
         longitude: number;
+        unitInWords: unknown;
+        unit: unknown;
         distance: unknown;
     }[];
     states: any[];
@@ -80,7 +96,7 @@ export declare function findClosestCities(point: GeoPoint, limit: number): {
  * // cities, states, and countries in a 30km radius
  * const { cities, states, countries } = findEntitiesWithinRadius({lat: 1, lng: 1}, 30)
  */
-export declare const findEntitiesWithinRadius: (point: GeoPoint, radius: number) => {
+export declare const findEntitiesWithinRadius: (point: GeoPoint, radius: number, unit?: keyof typeof EarthRadius) => {
     cities: {
         id: number;
         name: string;
@@ -92,6 +108,8 @@ export declare const findEntitiesWithinRadius: (point: GeoPoint, radius: number)
         country_name: string;
         latitude: number;
         longitude: number;
+        unitInWords: unknown;
+        unit: unknown;
         distance: unknown;
     }[];
     states: any[];

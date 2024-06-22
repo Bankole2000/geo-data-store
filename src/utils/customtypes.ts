@@ -1,22 +1,18 @@
+import { city, country, region, state, subregion } from "../db/schema";
+
 export interface GeoPoint {
   lat: number;
   lng: number;
 }
 
+export type BaseFilter = {
+  operation?: 'and' | 'or';
+  subfilters?: BaseFilter[];
+  suboperation?: 'and' | 'or'
+};
+
 // #region - city interfaces
-export interface City {
-  id: number;
-  name: string;
-  state_id: number;
-  state_code: string;
-  state_name: string;
-  country_id: number;
-  country_code: string;
-  country_name: string;
-  latitude: number;
-  longitude: number;
-  wikiDataId: string | null;
-}
+export type City = typeof city.$inferSelect
 
 export interface CityQueryOptions {
   filter?: CityFilter,
@@ -24,7 +20,7 @@ export interface CityQueryOptions {
   include?: CityInclude
 }
 
-export interface CityFilter {
+export type CityFilter = BaseFilter &  {
   id?: number;
   name?: string;
   state_id?: number;
@@ -34,7 +30,7 @@ export interface CityFilter {
   country_code?: string;
   country_name?: string;
   wikiDataId?: string;
-  operation?: 'and' | 'or'
+  subfilters?: CityFilter[]
 }
 
 export interface CityInclude {
@@ -49,19 +45,9 @@ export interface CitySort {
 // #endregion - city interfaces
 
 //#region - state interfaces
-export interface State {
-  id: number;
-  name: string;
-  country_id: number;
-  country_code: string;
-  country_name: string;
-  state_code: string;
-  type: string | null;
-  latitude: number;
-  longitude: number;
-}
+export type State = typeof state.$inferSelect
 
-export interface StateFilter {
+export type StateFilter = BaseFilter & {
   id?: number;
   name?: string;
   country_id?: number;
@@ -69,7 +55,7 @@ export interface StateFilter {
   country_name?: string;
   state_code?: string;
   type?: string;
-  operation?: 'and' | 'or'
+  subfilters?: StateFilter[]
 }
 
 export interface StateQueryOptions {
@@ -91,31 +77,9 @@ export interface StateSort {
 //#endregion
 
 //#region - country interfaces
-export interface Country {
-  id: number;
-  name: string;
-  iso3: string;
-  iso2: string;
-  numeric_code: string;
-  phone_code: string;
-  capital: string;
-  currency: string;
-  currency_name: string;
-  currency_symbol: string;
-  tld: string;
-  native: string;
-  region_id: number;
-  subregion_id: number;
-  nationality: string;
-  timezones: Array<TTimezone> | null;
-  translations: TTranslation | null;
-  latitude: number;
-  longitude: number;
-  emoji: string;
-  emojiU: string;
-}
+export type Country = typeof country.$inferSelect
 
-export interface CountryFilter {
+export type CountryFilter = BaseFilter & {
   id?: number;
   name?: string;
   iso3?: string;
@@ -133,7 +97,7 @@ export interface CountryFilter {
   nationality?: string;
   latitude?: number;
   longitude?: number;
-  operation?: 'and' | 'or';
+  subfilters?: CountryFilter[]
 }
 
 export interface CountrySort {
@@ -157,10 +121,13 @@ export interface CountryQueryOptions {
 //#endregion
 
 //#region - region interfaces
-export interface RegionFilter {
+export type Region = typeof region.$inferSelect
+
+export type RegionFilter = BaseFilter & {
+  id?: number;
   name?: string;
   wikiDataId?: string;
-  operation?: 'and' | 'or'
+  subfilters?: RegionFilter[]
 }
 
 export interface RegionInclude {
@@ -182,20 +149,15 @@ export interface RegionQueryOptions {
 //#endregion
 
 //#region - subregion interfaces
-export interface Subregion {
-  id: number;
-  name: string;
-  translations: unknown;
-  region_id: number;
-  wikiDataId: string | null;
-}
+export type Subregion = typeof subregion.$inferSelect
 
-export interface SubregionFilter {
+export type SubregionFilter = BaseFilter & {
   id?: string;
   name?: string;
   wikiDataId?: string;
   region_id?: number;
-  operation?: 'and' | 'or'
+  operation?: 'and' | 'or',
+  subfilters?: SubregionFilter[]
 }
 
 export interface SubregionInclude {
@@ -230,13 +192,6 @@ export type TRegionTranslation = {
   it?: string,
   cn?: string,
   tr?: string
-}
-
-export interface Region {
-  id: number;
-  name: string;
-  translations: unknown;
-  wikiDataId: string | null;
 }
 
 export type TTranslation = { kr?: string; "pt-BR"?: string; pt?: string; fa?: string; de?: string; fr?: string; it?: string; cn?: string; tr?: string; nl?: string | undefined; hr?: string; es?: string; ja?: string; }

@@ -1,7 +1,8 @@
 import { SQLiteSelectQueryBuilder } from "drizzle-orm/sqlite-core";
+import { region } from "../db/schema";
 import { CommonSQLite } from "./Common";
-import { Region, RegionFilter, RegionInclude, RegionSort, TRegionTranslation } from "../utils/customtypes";
-export declare class RegionRepository extends CommonSQLite {
+import { Region, RegionFilter, RegionInclude, RegionQueryOptions, RegionSort, TRegionTranslation } from "../utils/customtypes";
+export declare class RegionRepository extends CommonSQLite<typeof region> {
     db: import("drizzle-orm/better-sqlite3").BetterSQLite3Database<typeof import("../db/schema")>;
     table: import("drizzle-orm/sqlite-core").SQLiteTableWithColumns<{
         name: "region";
@@ -68,17 +69,24 @@ export declare class RegionRepository extends CommonSQLite {
      * const newRegion = await regionRepository.createRegion('Region Name', '{}', 'wikiDataId1');
      * console.log('New Region:', newRegion);
      */
-    createRegion(name: string, translations: TRegionTranslation, wikiDataId: string): Promise<Region>;
+    createRegion(name: string, translations: TRegionTranslation, wikiDataId: string): Promise<{
+        id: number;
+        name: string;
+        translations: unknown;
+        wikiDataId: string | null;
+    }>;
     /**
      * Retrieves a paginated list of regions.
-     * @param {number} page - The page number to retrieve.
-     * @param {number} limit - The number of regions per page.
-     * @param {RegionFilter} [filter] - Filtering parameters.
-     * @param {RegionSort} [sort] - Sorting parameters.
-     * @param {RegionInclude} [include] - Sorting parameters.
+     * @async (new {@link RegionRepository}).{@link getRegions}({})
+     * @param {RegionQueryOptions & { page?: number, limit?: number,}} [options] - Region query options and pagination parameters.
+     * @param {number} [options.page] - The page number to retrieve.
+     * @param {number} [options.limit] - The number of regions per page.
+     * @param {RegionFilter} [options.filter] - Filtering parameters.
+     * @param {RegionSort} [options.sort] - Sorting parameters.
+     * @param {RegionInclude} [options.include] - Resources to include.
      * @param {boolean} [include.subregions=false] - Whether to include related subregions.
      * @param {boolean} [include.countries=false] - Whether to include related countries.
-     * @returns {Promise<Region[]>} The list of regions.
+     * @returns {Promise<{data: any[], meta: any}>} Promise<{data: Region[], meta: any}> The list of regions.
      * @example
      * const paginatedRegions = await regionRepository.getRegions(1, 10, { name: 'Region' }, { field: 'name', direction: 'asc' }, true, true);
      * console.log('Paginated Regions:', paginatedRegions);
@@ -86,16 +94,13 @@ export declare class RegionRepository extends CommonSQLite {
     getRegions({ page, limit, filter, sort, include }: {
         page?: number;
         limit?: number;
-        filter?: RegionFilter;
-        sort?: RegionSort;
-        include?: RegionInclude;
-    }): Promise<{
+    } & RegionQueryOptions): Promise<{
         data: {
             region: {
                 id: number;
                 name: string;
-                wikiDataId: string | null;
                 translations: unknown;
+                wikiDataId: string | null;
             };
         }[] | (({ id, ...rest }: {
             id: number;
@@ -114,17 +119,24 @@ export declare class RegionRepository extends CommonSQLite {
             rawsql: import("drizzle-orm").Query;
         };
     }>;
-    getAllRegions({ filter, sort, include }: {
-        filter?: RegionFilter;
-        sort?: RegionSort;
-        include?: RegionInclude;
-    }): Promise<{
+    /**
+     * Retrieves all regions with optional filtering, sorting, and inclusion of related entities.
+     * @async (new {@link RegionRepository}).{@link getAllRegions}({})
+     * @param {Object} [options] - {@link RegionQueryOptions} Options for filtering, sorting, and including related entities.
+     * @param {RegionFilter} [options.filter={}] - {@link RegionFilter} Filtering parameters.
+     * @param {RegionSort} [options.sort={field: 'id', direction: 'asc'}] - {@link RegionSort} Sorting parameters.
+     * @param {RegionInclude} [options.include={}] - {@link RegionInclude} Parameters to include related entities.
+     * @returns {Promise<{ data: any[], meta: { filter: RegionFilter, orderBy: RegionSort, total: number, rawsql: string } }>} The region data along with metadata including filter, order, total count, and raw SQL query.
+     * @example
+     * const rr = new RegionRepository();
+     * const regions = await rr.getAllRegions({ filter: { name: 'Region' }, sort: { field: 'name', direction: 'asc' }, include: { count: true } });
+     * // returns { data: Region[], meta: { filter: RegionFilter, orderBy: RegionSort, total: number, rawsql: string } }
+     */
+    getAllRegions({ filter, sort, include }: RegionQueryOptions): Promise<{
         data: {
             countries?: {
                 id: number;
                 name: string;
-                latitude: number;
-                longitude: number;
                 iso3: string;
                 iso2: string;
                 numeric_code: string;
@@ -136,19 +148,21 @@ export declare class RegionRepository extends CommonSQLite {
                 tld: string;
                 native: string;
                 region_id: number;
+                translations: import("../utils/customtypes").TTranslation | null;
                 subregion_id: number;
                 nationality: string;
                 timezones: import("../utils/customtypes").TTimezone[] | null;
-                translations: import("../utils/customtypes").TTranslation | null;
+                latitude: number;
+                longitude: number;
                 emoji: string;
                 emojiU: string;
             }[] | undefined;
             subregions?: {
                 id: number;
                 name: string;
-                wikiDataId: string | null;
                 region_id: number;
                 translations: unknown;
+                wikiDataId: string | null;
             }[] | undefined;
             id: number;
         }[];
@@ -177,8 +191,6 @@ export declare class RegionRepository extends CommonSQLite {
             countries?: {
                 id: number;
                 name: string;
-                latitude: number;
-                longitude: number;
                 iso3: string;
                 iso2: string;
                 numeric_code: string;
@@ -190,19 +202,21 @@ export declare class RegionRepository extends CommonSQLite {
                 tld: string;
                 native: string;
                 region_id: number;
+                translations: import("../utils/customtypes").TTranslation | null;
                 subregion_id: number;
                 nationality: string;
                 timezones: import("../utils/customtypes").TTimezone[] | null;
-                translations: import("../utils/customtypes").TTranslation | null;
+                latitude: number;
+                longitude: number;
                 emoji: string;
                 emojiU: string;
             }[] | undefined;
             subregions?: {
                 id: number;
                 name: string;
-                wikiDataId: string | null;
                 region_id: number;
                 translations: unknown;
+                wikiDataId: string | null;
             }[] | undefined;
             id: number;
         }[];
@@ -228,7 +242,6 @@ export declare class RegionRepository extends CommonSQLite {
  */
     deleteRegion(id: number): Promise<void>;
     addFilters<T extends SQLiteSelectQueryBuilder>(qb: T, filter: RegionFilter): T;
-    getWhereOptions(filter: RegionFilter): import("drizzle-orm").SQL<unknown> | null | undefined;
     /**
      * Counts the number of related subregions and countries for a given region.
      * @param {number} regionId - The ID of the region.
@@ -250,8 +263,6 @@ export declare class RegionRepository extends CommonSQLite {
         countries?: {
             id: number;
             name: string;
-            latitude: number;
-            longitude: number;
             iso3: string;
             iso2: string;
             numeric_code: string;
@@ -263,19 +274,21 @@ export declare class RegionRepository extends CommonSQLite {
             tld: string;
             native: string;
             region_id: number;
+            translations: import("../utils/customtypes").TTranslation | null;
             subregion_id: number;
             nationality: string;
             timezones: import("../utils/customtypes").TTimezone[] | null;
-            translations: import("../utils/customtypes").TTranslation | null;
+            latitude: number;
+            longitude: number;
             emoji: string;
             emojiU: string;
         }[] | undefined;
         subregions?: {
             id: number;
             name: string;
-            wikiDataId: string | null;
             region_id: number;
             translations: unknown;
+            wikiDataId: string | null;
         }[] | undefined;
         id: number;
     };

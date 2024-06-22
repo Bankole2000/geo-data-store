@@ -5,7 +5,7 @@ import { subregion, country, region } from "../db/schema";
 import { CommonSQLite } from "./Common";
 import { Subregion, SubregionFilter, SubregionSort, SubregionInclude, SubregionQueryOptions } from "../utils/customtypes";
 
-export class SubregionRepository extends CommonSQLite {
+export class SubregionRepository extends CommonSQLite<typeof subregion> {
   db = db
   table = subregion
   
@@ -51,7 +51,7 @@ export class SubregionRepository extends CommonSQLite {
         ...(include?.region ? {region} : {})
       },
     }).from(this.table).$dynamic();
-    if (filter) {
+    if (Object.keys(filter).length) {
       query = this.addFilters(query, filter)
     }
     if(include?.region){
@@ -70,6 +70,19 @@ export class SubregionRepository extends CommonSQLite {
     return result
   }
 
+/**
+ * Retrieves all subregions with optional filtering, sorting, and inclusion of related entities.
+ * @async await (new {@link SubregionRepository}()).{@link getAllSubregions}({})
+ * @param {SubregionQueryOptions} options - {@link SubregionQueryOptions} Options for filtering, sorting, and including related entities.
+ * @param {SubregionFilter} [options.filter={}] - {@link SubregionFilter} Filtering parameters.
+ * @param {SubregionSort} [options.sort={field: 'id', direction: 'asc'}] - {@link SubregionSort} Sorting parameters.
+ * @param {SubregionInclude} [options.include={}] - {@link SubregionInclude} Parameters to include related entities (region).
+ * @returns {Promise<{ data: any[], meta: { filter: SubregionFilter, orderBy: SubregionSort, total: number, rawsql: string } }>} The subregion data along with metadata including filter, order, total count, and raw SQL query.
+ * @example
+ * const sr = new SubregionRepository();
+ * const subregions = await sr.getAllSubregions({ filter: { name: 'Subregion' }, sort: { field: 'name', direction: 'asc' }, include: { region: true, count: true } });
+ * // returns { data: Subregion[], meta: { filter: SubregionFilter, orderBy: SubregionSort, total: number, rawsql: string } }
+ */
   async getAllSubregions({filter={}, sort = {field: 'id', direction: 'asc'}, include = {}}: SubregionQueryOptions){
     const qb = this.db;
     let query = qb.select({
@@ -78,7 +91,7 @@ export class SubregionRepository extends CommonSQLite {
         ...(include?.region ? {region} : {}) 
       }
     }).from(this.table).$dynamic();
-    if (filter) {
+    if (Object.keys(filter).length) {
       query = this.addFilters(query, filter)
     }
     if(include?.region){
@@ -152,14 +165,14 @@ export class SubregionRepository extends CommonSQLite {
     return qb
   }
 
-  getWhereOptions(filter: SubregionFilter){
-    const filterOperation = filter?.operation === 'or' ? or : and
-    const conditions: SQLWrapper[] = []
-    if (filter.name) conditions.push(like(subregion.name, `%${filter.name}%`))
-    if (filter.wikiDataId) conditions.push(eq(subregion.wikiDataId, filter.wikiDataId))
-    if (filter.region_id) conditions.push(eq(subregion.region_id, filter.region_id))
-    return conditions.length ? filterOperation(...conditions) : null;
-  }
+  // getWhereOptions(filter: SubregionFilter){
+  //   const filterOperation = filter?.operation === 'or' ? or : and
+  //   const conditions: SQLWrapper[] = []
+  //   if (filter.name) conditions.push(like(subregion.name, `%${filter.name}%`))
+  //   if (filter.wikiDataId) conditions.push(eq(subregion.wikiDataId, filter.wikiDataId))
+  //   if (filter.region_id) conditions.push(eq(subregion.region_id, filter.region_id))
+  //   return conditions.length ? filterOperation(...conditions) : null;
+  // }
 
 /**
  * Counts the number of related subregions and countries for a given subregion.

@@ -5,7 +5,7 @@ import { city, country, region, state, subregion } from "../db/schema";
 import { CommonSQLite } from "./Common";
 import { Country, CountryFilter, CountryInclude, CountryQueryOptions, CountrySort } from "../utils/customtypes";
 
-export class CountryRepository extends CommonSQLite {
+export class CountryRepository extends CommonSQLite<typeof country> {
   db = db
   table = country
   
@@ -52,7 +52,7 @@ export class CountryRepository extends CommonSQLite {
         ...(include?.subregion ? {subregion} : {})
       },
     }).from(this.table).$dynamic();
-    if (filter) {
+    if (Object.keys(filter).length) {
       query = this.addFilters(query, filter)
     }
     if(include?.region){
@@ -70,6 +70,19 @@ export class CountryRepository extends CommonSQLite {
     return result
   }
 
+/**
+ * Retrieves all countries with optional filtering, sorting, and inclusion of related entities.
+ * @async await (new {@link CountryRepository}()).{@link getAllCountries}({})
+ * @param {CountryQueryOptions} options - {@link CountryQueryOptions} Options for filtering, sorting, and including related entities.
+ * @param {CountryFilter} [options.filter={}] - {@link CountryFilter} Filtering parameters.
+ * @param {CountrySort} [options.sort={field: 'id', direction: 'asc'}] - {@link CountrySort} Sorting parameters.
+ * @param {CountryInclude} [options.include={}] - {@link CountryInclude} Parameters to include related entities (region and/or subregion).
+ * @returns {Promise<{ data: any[], meta: { filter: CountryFilter, orderBy: CountrySort, total: number, rawsql: string } }>} The country data along with metadata including filter, order, total count, and raw SQL query.
+ * @example
+ * const cr = new CountryRepository();
+ * const countries = await cr.getAllCountries({ filter: { name: 'Country' }, sort: { field: 'name', direction: 'asc' }, include: { region: true, subregion: true, count: true } });
+ * // returns { data: Country[], meta: { filter: CountryFilter, orderBy: CountrySort, total: number, rawsql: string } }
+ */
   async getAllCountries({filter={}, sort = {field: 'id', direction: 'asc'}, include = {}}: CountryQueryOptions){
     const qb = this.db;
     let query = qb.select({
@@ -79,7 +92,7 @@ export class CountryRepository extends CommonSQLite {
         ...(include?.subregion ? {subregion} : {}) 
       }
     }).from(this.table).$dynamic();
-    if (filter) {
+    if (Object.keys(filter).length) {
       query = this.addFilters(query, filter)
     }
     if(include?.region){
@@ -164,27 +177,6 @@ export class CountryRepository extends CommonSQLite {
     return qb
   }
 
-  getWhereOptions(filter: CountryFilter){
-    const filterOperation = filter?.operation === 'or' ? or : and
-    const conditions: SQLWrapper[] = []
-    if (filter.name) conditions.push(like(country.name, `%${filter.name}%`));
-    if (filter.nationality) conditions.push(like(country.nationality, `%${filter.nationality}%`));
-    if (filter.currency_name) conditions.push(like(country.currency_name, `%${filter.currency_name}%`));
-    if (filter.native) conditions.push(like(country.native, `%${filter.native}%`));
-    if (filter.capital) conditions.push(like(country.capital, `%${filter.capital}%`));
-    if (filter.iso2) conditions.push(eq(country.iso2, filter.iso2));
-    if (filter.iso3) conditions.push(eq(country.iso3, filter.iso3));
-    if (filter.numeric_code) conditions.push(eq(country.numeric_code, filter.numeric_code));
-    if (filter.currency) conditions.push(eq(country.currency, filter.currency));
-    if (filter.currency_symbol) conditions.push(eq(country.currency_symbol, filter.currency_symbol));
-    if (filter.tld) conditions.push(eq(country.tld, filter.tld));
-    if (filter.region_id) conditions.push(eq(country.region_id, filter.region_id));
-    if (filter.subregion_id) conditions.push(eq(country.subregion_id, filter.subregion_id));
-    if (filter.region_id) conditions.push(eq(country.region_id, filter.region_id));
-    if (filter.id) conditions.push(eq(country.id, filter.id));
-    return conditions.length ? filterOperation(...conditions) : null;
-  }
-
 /**
  * Counts the number of related countries and countries for a given country.
  * @param {number} countryId - The ID of the country.
@@ -206,7 +198,6 @@ export class CountryRepository extends CommonSQLite {
       .all();
       const stateCount = stateCountResult[0].count;
       const cityCount = cityCountResult[0].count;
-      console.log(stateCount, cityCount);
     return { id, ...rest, stateCount, cityCount };
   }
 

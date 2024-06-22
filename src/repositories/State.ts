@@ -5,7 +5,7 @@ import { state, country, city } from "../db/schema";
 import { CommonSQLite } from "./Common";
 import { State, StateFilter, StateSort, StateInclude, StateQueryOptions } from "../utils/customtypes";
 
-export class StateRepository extends CommonSQLite {
+export class StateRepository extends CommonSQLite<typeof state> {
   db = db
   table = state
   
@@ -54,7 +54,7 @@ export class StateRepository extends CommonSQLite {
         ...(include?.country ? {country} : {})
       },
     }).from(this.table).$dynamic();
-    if (filter) {
+    if (Object.keys(filter).length) {
       query = this.addFilters(query, filter)
     }
     if(include?.country){
@@ -73,6 +73,19 @@ export class StateRepository extends CommonSQLite {
     return result
   }
 
+/**
+ * Retrieves all states with optional filtering, sorting, and inclusion of related entities.
+ * @async await (new {@link StateRepository}()).{@link getAllStates}({})
+ * @param {StateQueryOptions} options - {@link StateQueryOptions} Options for filtering, sorting, and including related entities.
+ * @param {StateFilter} [options.filter={}] - {@link StateFilter} Filtering parameters.
+ * @param {StateSort} [options.sort={field: 'id', direction: 'asc'}] - {@link StateSort} Sorting parameters.
+ * @param {StateInclude} [options.include={}] - {@link StateInclude} Parameters to include related entities (country).
+ * @returns {Promise<{ data: any[], meta: { filter: StateFilter, orderBy: StateSort, total: number, rawsql: string } }>} The state data along with metadata including filter, order, total count, and raw SQL query.
+ * @example
+ * const sr = new StateRepository();
+ * const states = await sr.getAllStates({ filter: { name: 'State' }, sort: { field: 'name', direction: 'asc' }, include: { country: true, count: true } });
+ * // returns { data: State[], meta: { filter: StateFilter, orderBy: StateSort, total: number, rawsql: string } }
+ */
   async getAllStates({filter={}, sort = {field: 'id', direction: 'asc'}, include = {}}: StateQueryOptions){
     const qb = this.db;
     let query = qb.select({
@@ -81,7 +94,7 @@ export class StateRepository extends CommonSQLite {
         ...(include?.country ? {country} : {}) 
       }
     }).from(this.table).$dynamic();
-    if (filter) {
+    if (Object.keys(filter).length) {
       query = this.addFilters(query, filter)
     }
     if(include?.country){
@@ -158,18 +171,18 @@ export class StateRepository extends CommonSQLite {
     return qb
   }
 
-  getWhereOptions(filter: StateFilter){
-    const filterOperation = filter?.operation === 'or' ? or : and
-    const conditions: SQLWrapper[] = []
-    if (filter.id) conditions.push(eq(state.id, filter.id))
-    if (filter.name) conditions.push(like(state.name, `%${filter.name}%`))
-    if (filter.country_id) conditions.push(eq(state.country_id, filter.country_id))
-    if (filter.country_code) conditions.push(eq(state.country_code, filter.country_code))
-    if (filter.country_name) conditions.push(like(state.country_name, `%${filter.country_name}%`))
-    if (filter.state_code) conditions.push(eq(state.state_code, filter.state_code))
-    if (filter.type) conditions.push(like(state.type, `%${filter.type}%`))
-    return conditions.length ? filterOperation(...conditions) : null;
-  }
+  // getWhereOptions(filter: StateFilter){
+  //   const filterOperation = filter?.operation === 'or' ? or : and
+  //   const conditions: SQLWrapper[] = []
+  //   if (filter.id) conditions.push(eq(state.id, filter.id))
+  //   if (filter.name) conditions.push(like(state.name, `%${filter.name}%`))
+  //   if (filter.country_id) conditions.push(eq(state.country_id, filter.country_id))
+  //   if (filter.country_code) conditions.push(eq(state.country_code, filter.country_code))
+  //   if (filter.country_name) conditions.push(like(state.country_name, `%${filter.country_name}%`))
+  //   if (filter.state_code) conditions.push(eq(state.state_code, filter.state_code))
+  //   if (filter.type) conditions.push(like(state.type, `%${filter.type}%`))
+  //   return conditions.length ? filterOperation(...conditions) : null;
+  // }
 
 /**
  * Counts the number of related states and countries for a given state.

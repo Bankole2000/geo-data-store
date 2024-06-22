@@ -1,7 +1,8 @@
 import { SQLiteSelectQueryBuilder } from "drizzle-orm/sqlite-core";
+import { city } from "../db/schema";
 import { CommonSQLite } from "./Common";
-import { City, CityFilter, CityInclude, CitySort } from "../utils/customtypes";
-export declare class CityRepository extends CommonSQLite {
+import { City, CityFilter, CityInclude, CityQueryOptions, CitySort } from "../utils/customtypes";
+export declare class CityRepository extends CommonSQLite<typeof city> {
     db: import("drizzle-orm/better-sqlite3").BetterSQLite3Database<typeof import("../db/schema")>;
     table: import("drizzle-orm/sqlite-core").SQLiteTableWithColumns<{
         name: "city";
@@ -154,38 +155,42 @@ export declare class CityRepository extends CommonSQLite {
      */
     createCity(name: string, state_id: number, latitude: number, longitude: number, wikiDataId?: string | null): Promise<City>;
     /**
-     * Retrieves a paginated list of citys.
-     * @param {number} page - The page number to retrieve.
-     * @param {number} limit - The number of citys per page.
-     * @param {CityFilter} [filter] - Filtering parameters.
-     * @param {CitySort} [sort] - Sorting parameters.
-     * @param {CityInclude} [include] - Sorting parameters.
-     * @param {boolean} [include.citys=false] - Whether to include related citys.
-     * @param {boolean} [include.countries=false] - Whether to include related countries.
-     * @returns {Promise<City[]>} The list of citys.
+     * Retrieves a paginated list of cities.
+     * @async (new {@link CityRepository}()).{@link getCities}({})
+     * @param {Object} options - Options for pagintion, filtering, sorting, and including related entities.
+     * @param {number} [options.limit] - The number of cities per page.
+     * @param {CityFilter} [options.filter] - {@link CityFilter} Filtering parameters.
+     * @param {CitySort} [options.sort] - {@link CitySort} Sorting parameters.
+     * @param {CityInclude} [options.include] - {@link CityInclude} Whether to include related resources.
+     * @param {boolean} [include.state=false] - Whether to include related state.
+     * @param {boolean} [include.country=false] - Whether to include related country.
+     * @returns {Promise<City[]>} - {data: City[], meta: any} - The list of cities.
      * @example
-     * const paginatedCitys = await cityRepository.getCitys(1, 10, { name: 'City' }, { field: 'name', direction: 'asc' }, true, true);
-     * console.log('Paginated Citys:', paginatedCitys);
+     * // Get cities in US whose name contains 'New'
+     * // Paginate and include Country + state data
+     * const paginatedCities = await cityRepository.getCities({
+     *    page: 1, limit: 10,
+     *    filter: { name: 'New', country_code: 'US' },
+     *    sort = { field: 'name', direction: 'asc' },
+     *    include: {country: true, state: true}
+     * });
      */
-    getCitys({ page, limit, filter, sort, include }: {
+    getCities({ page, limit, filter, sort, include }: {
         page?: number;
         limit?: number;
-        filter?: CityFilter;
-        sort?: CitySort;
-        include?: CityInclude;
-    }): Promise<{
+    } & CityQueryOptions): Promise<{
         data: {
             id: number;
             name: string;
             state_id: number;
-            state_code: string;
-            state_name: string;
             country_id: number;
-            country_code: string;
-            country_name: string;
+            wikiDataId: string | null;
             latitude: number;
             longitude: number;
-            wikiDataId: string | null;
+            country_code: string;
+            country_name: string;
+            state_code: string;
+            state_name: string;
         }[];
         meta: {
             filter: CityFilter;
@@ -197,23 +202,32 @@ export declare class CityRepository extends CommonSQLite {
             rawsql: import("drizzle-orm").Query;
         };
     }>;
-    getAllCitys({ filter, sort, include }: {
-        filter?: CityFilter;
-        sort?: CitySort;
-        include?: CityInclude;
-    }): Promise<{
+    /**
+     * Retrieves all cities with optional filtering, sorting, and inclusion of related entities.
+     * @async new {@link CityRepository}.{@link getAllCities}({})
+     * @param {CityQueryOptions} options - {@link CityQueryOptions} Options for filtering, sorting, and including related entities.
+     * @param {CityFilter} [options.filter={}] - {@link CityFilter} Filtering parameters.
+     * @param {CitySort} [options.sort={field: 'id', direction: 'asc'}] - {@link CitySort} Sorting parameters.
+     * @param {CityInclude} [options.include={}] - {@link CityInclude} Parameters to include related entities (country and/or state).
+     * @returns {Promise<{ data: any[], meta: { filter: CityFilter, orderBy: CitySort, total: number, rawsql: string } }>} The city data along with metadata including filter, order, total count, and raw SQL query.
+     * @example
+     * const cr = new CityRepository();
+     * const cities = await cr.getAllCities({ filter: { name: 'City' }, sort: { field: 'name', direction: 'asc' }, include: { country: true, state: true } });
+     * // returns { data: City[], meta: { filter: CityFilter, orderBy: CitySort, total: number, rawsql: string } }
+     */
+    getAllCities({ filter, sort, include }: CityQueryOptions): Promise<{
         data: {
             id: number;
             name: string;
             state_id: number;
-            state_code: string;
-            state_name: string;
             country_id: number;
-            country_code: string;
-            country_name: string;
+            wikiDataId: string | null;
             latitude: number;
             longitude: number;
-            wikiDataId: string | null;
+            country_code: string;
+            country_name: string;
+            state_code: string;
+            state_name: string;
         }[];
         meta: {
             filter: CityFilter;
@@ -240,14 +254,14 @@ export declare class CityRepository extends CommonSQLite {
             id: number;
             name: string;
             state_id: number;
-            state_code: string;
-            state_name: string;
             country_id: number;
-            country_code: string;
-            country_name: string;
+            wikiDataId: string | null;
             latitude: number;
             longitude: number;
-            wikiDataId: string | null;
+            country_code: string;
+            country_name: string;
+            state_code: string;
+            state_name: string;
         }[];
         meta: {
             rawsql: import("drizzle-orm").Query;
@@ -271,6 +285,5 @@ export declare class CityRepository extends CommonSQLite {
  */
     deleteCity(id: number): Promise<void>;
     addFilters<T extends SQLiteSelectQueryBuilder>(qb: T, filter: CityFilter): T;
-    getWhereOptions(filter: CityFilter): import("drizzle-orm").SQL<unknown> | null | undefined;
 }
 export declare const cityRepository: CityRepository;

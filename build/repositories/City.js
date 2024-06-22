@@ -19,6 +19,26 @@ class CityRepository extends Common_1.CommonSQLite {
         super(...arguments);
         this.db = db_1.db;
         this.table = schema_1.city;
+        // getWhereOptions(filter: CityFilter | CityFilter[]){
+        //   if (!Array.isArray(filter)){
+        //     const filterOperation = filter?.operation === 'or' ? or : and
+        //     const conditions: SQLWrapper[] = []
+        //     if (filter.name) conditions.push(like(city.name, `%${filter.name}%`))
+        //     if (filter.state_name) conditions.push(like(city.state_name, `%${filter.state_name}%`))
+        //     if (filter.country_name) conditions.push(like(city.country_name, `%${filter.country_name}%`))
+        //     if (filter.wikiDataId) conditions.push(like(city.wikiDataId, `%${filter.wikiDataId}%`))
+        //     if (filter.id) conditions.push(eq(city.id, filter.id))
+        //     if (filter.country_id) conditions.push(eq(city.country_id, filter.country_id))
+        //     if (filter.state_id) conditions.push(eq(city.state_id, filter.state_id))
+        //     if (filter.state_code) conditions.push(eq(city.state_code, filter.state_code))
+        //     if (filter.country_code) conditions.push(eq(city.country_code, filter.country_code))
+        //     if (filter.subfilters) conditions.push(this.getWhereOptions(filter.subfilters)!)
+        //     return filterOperation(...conditions);
+        //   } else {
+        //     filter.forEach(f => {
+        //     })
+        //   }
+        // }
     }
     /**
      * Creates a new city.
@@ -41,26 +61,33 @@ class CityRepository extends Common_1.CommonSQLite {
         });
     }
     /**
-     * Retrieves a paginated list of citys.
-     * @param {number} page - The page number to retrieve.
-     * @param {number} limit - The number of citys per page.
-     * @param {CityFilter} [filter] - Filtering parameters.
-     * @param {CitySort} [sort] - Sorting parameters.
-     * @param {CityInclude} [include] - Sorting parameters.
-     * @param {boolean} [include.citys=false] - Whether to include related citys.
-     * @param {boolean} [include.countries=false] - Whether to include related countries.
-     * @returns {Promise<City[]>} The list of citys.
+     * Retrieves a paginated list of cities.
+     * @async (new {@link CityRepository}()).{@link getCities}({})
+     * @param {Object} options - Options for pagintion, filtering, sorting, and including related entities.
+     * @param {number} [options.limit] - The number of cities per page.
+     * @param {CityFilter} [options.filter] - {@link CityFilter} Filtering parameters.
+     * @param {CitySort} [options.sort] - {@link CitySort} Sorting parameters.
+     * @param {CityInclude} [options.include] - {@link CityInclude} Whether to include related resources.
+     * @param {boolean} [include.state=false] - Whether to include related state.
+     * @param {boolean} [include.country=false] - Whether to include related country.
+     * @returns {Promise<City[]>} - {data: City[], meta: any} - The list of cities.
      * @example
-     * const paginatedCitys = await cityRepository.getCitys(1, 10, { name: 'City' }, { field: 'name', direction: 'asc' }, true, true);
-     * console.log('Paginated Citys:', paginatedCitys);
+     * // Get cities in US whose name contains 'New'
+     * // Paginate and include Country + state data
+     * const paginatedCities = await cityRepository.getCities({
+     *    page: 1, limit: 10,
+     *    filter: { name: 'New', country_code: 'US' },
+     *    sort = { field: 'name', direction: 'asc' },
+     *    include: {country: true, state: true}
+     * });
      */
-    getCitys(_a) {
+    getCities(_a) {
         return __awaiter(this, arguments, void 0, function* ({ page = 1, limit = 10, filter = {}, sort = { field: 'id', direction: 'asc' }, include = {} }) {
             const qb = this.db;
             let query = qb.select({
                 city: Object.assign(Object.assign(Object.assign({}, this.table), ((include === null || include === void 0 ? void 0 : include.state) ? { state: schema_1.state } : {})), ((include === null || include === void 0 ? void 0 : include.country) ? { country: schema_1.country } : {})),
             }).from(this.table).$dynamic();
-            if (filter) {
+            if (Object.keys(filter).length) {
                 query = this.addFilters(query, filter);
             }
             if (include === null || include === void 0 ? void 0 : include.country) {
@@ -75,17 +102,29 @@ class CityRepository extends Common_1.CommonSQLite {
             const total = (filter ? yield db_1.db.select({ count: (0, drizzle_orm_1.count)() }).from(this.table).where(this.getWhereOptions(filter)) : yield db_1.db.select({ count: (0, drizzle_orm_1.count)() }).from(this.table))[0].count;
             const rawsql = query.toSQL();
             const result = { data: (yield query).map(({ city }) => city), meta: { filter, orderBy: sort, page, limit, total, pages: Math.ceil(total / limit), rawsql } };
-            // const result = {data: include?.count ? (await query).map(({city}) => city) : (await query).map(({city}) => city), meta: {filter, orderBy: sort, page, limit, total, pages: Math.ceil(total/limit), rawsql}}
             return result;
         });
     }
-    getAllCitys(_a) {
+    /**
+     * Retrieves all cities with optional filtering, sorting, and inclusion of related entities.
+     * @async new {@link CityRepository}.{@link getAllCities}({})
+     * @param {CityQueryOptions} options - {@link CityQueryOptions} Options for filtering, sorting, and including related entities.
+     * @param {CityFilter} [options.filter={}] - {@link CityFilter} Filtering parameters.
+     * @param {CitySort} [options.sort={field: 'id', direction: 'asc'}] - {@link CitySort} Sorting parameters.
+     * @param {CityInclude} [options.include={}] - {@link CityInclude} Parameters to include related entities (country and/or state).
+     * @returns {Promise<{ data: any[], meta: { filter: CityFilter, orderBy: CitySort, total: number, rawsql: string } }>} The city data along with metadata including filter, order, total count, and raw SQL query.
+     * @example
+     * const cr = new CityRepository();
+     * const cities = await cr.getAllCities({ filter: { name: 'City' }, sort: { field: 'name', direction: 'asc' }, include: { country: true, state: true } });
+     * // returns { data: City[], meta: { filter: CityFilter, orderBy: CitySort, total: number, rawsql: string } }
+     */
+    getAllCities(_a) {
         return __awaiter(this, arguments, void 0, function* ({ filter = {}, sort = { field: 'id', direction: 'asc' }, include = {} }) {
             const qb = this.db;
             let query = qb.select({
                 city: Object.assign(Object.assign(Object.assign({}, this.table), ((include === null || include === void 0 ? void 0 : include.country) ? { country: schema_1.country } : {})), ((include === null || include === void 0 ? void 0 : include.state) ? { state: schema_1.state } : {}))
             }).from(this.table).$dynamic();
-            if (filter) {
+            if (Object.keys(filter).length) {
                 query = this.addFilters(query, filter);
             }
             if (include === null || include === void 0 ? void 0 : include.country) {
@@ -163,29 +202,6 @@ class CityRepository extends Common_1.CommonSQLite {
             return qb.where(whereOptions);
         }
         return qb;
-    }
-    getWhereOptions(filter) {
-        const filterOperation = (filter === null || filter === void 0 ? void 0 : filter.operation) === 'or' ? drizzle_orm_1.or : drizzle_orm_1.and;
-        const conditions = [];
-        if (filter.name)
-            conditions.push((0, drizzle_orm_1.like)(schema_1.city.name, `%${filter.name}%`));
-        if (filter.state_name)
-            conditions.push((0, drizzle_orm_1.like)(schema_1.city.state_name, `%${filter.state_name}%`));
-        if (filter.country_name)
-            conditions.push((0, drizzle_orm_1.like)(schema_1.city.country_name, `%${filter.country_name}%`));
-        if (filter.wikiDataId)
-            conditions.push((0, drizzle_orm_1.like)(schema_1.city.wikiDataId, `%${filter.wikiDataId}%`));
-        if (filter.id)
-            conditions.push((0, drizzle_orm_1.eq)(schema_1.city.id, filter.id));
-        if (filter.country_id)
-            conditions.push((0, drizzle_orm_1.eq)(schema_1.city.country_id, filter.country_id));
-        if (filter.state_id)
-            conditions.push((0, drizzle_orm_1.eq)(schema_1.city.state_id, filter.state_id));
-        if (filter.state_code)
-            conditions.push((0, drizzle_orm_1.eq)(schema_1.city.state_code, filter.state_code));
-        if (filter.country_code)
-            conditions.push((0, drizzle_orm_1.eq)(schema_1.city.country_code, filter.country_code));
-        return conditions.length ? filterOperation(...conditions) : null;
     }
 }
 exports.CityRepository = CityRepository;

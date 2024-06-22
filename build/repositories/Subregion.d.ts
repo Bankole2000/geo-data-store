@@ -1,7 +1,8 @@
 import { SQLiteSelectQueryBuilder } from "drizzle-orm/sqlite-core";
+import { subregion } from "../db/schema";
 import { CommonSQLite } from "./Common";
-import { Subregion, SubregionFilter, SubregionSort, SubregionInclude } from "../utils/customtypes";
-export declare class SubregionRepository extends CommonSQLite {
+import { Subregion, SubregionFilter, SubregionSort, SubregionInclude, SubregionQueryOptions } from "../utils/customtypes";
+export declare class SubregionRepository extends CommonSQLite<typeof subregion> {
     db: import("drizzle-orm/better-sqlite3").BetterSQLite3Database<typeof import("../db/schema")>;
     table: import("drizzle-orm/sqlite-core").SQLiteTableWithColumns<{
         name: "subregion";
@@ -98,16 +99,11 @@ export declare class SubregionRepository extends CommonSQLite {
     getSubregions({ page, limit, filter, sort, include }: {
         page?: number;
         limit?: number;
-        filter?: SubregionFilter;
-        sort?: SubregionSort;
-        include?: SubregionInclude;
-    }): Promise<{
+    } & SubregionQueryOptions): Promise<{
         data: {
             countries: {
                 id: number;
                 name: string;
-                latitude: number;
-                longitude: number;
                 iso3: string;
                 iso2: string;
                 numeric_code: string;
@@ -119,10 +115,12 @@ export declare class SubregionRepository extends CommonSQLite {
                 tld: string;
                 native: string;
                 region_id: number;
+                translations: import("../utils/customtypes").TTranslation | null;
                 subregion_id: number;
                 nationality: string;
                 timezones: import("../utils/customtypes").TTimezone[] | null;
-                translations: import("../utils/customtypes").TTranslation | null;
+                latitude: number;
+                longitude: number;
                 emoji: string;
                 emojiU: string;
             }[];
@@ -138,17 +136,24 @@ export declare class SubregionRepository extends CommonSQLite {
             rawsql: import("drizzle-orm").Query;
         };
     }>;
-    getAllSubregions({ filter, sort, include }: {
-        filter?: SubregionFilter;
-        sort?: SubregionSort;
-        include?: SubregionInclude;
-    }): Promise<{
+    /**
+     * Retrieves all subregions with optional filtering, sorting, and inclusion of related entities.
+     * @async await (new {@link SubregionRepository}()).{@link getAllSubregions}({})
+     * @param {SubregionQueryOptions} options - {@link SubregionQueryOptions} Options for filtering, sorting, and including related entities.
+     * @param {SubregionFilter} [options.filter={}] - {@link SubregionFilter} Filtering parameters.
+     * @param {SubregionSort} [options.sort={field: 'id', direction: 'asc'}] - {@link SubregionSort} Sorting parameters.
+     * @param {SubregionInclude} [options.include={}] - {@link SubregionInclude} Parameters to include related entities (region).
+     * @returns {Promise<{ data: any[], meta: { filter: SubregionFilter, orderBy: SubregionSort, total: number, rawsql: string } }>} The subregion data along with metadata including filter, order, total count, and raw SQL query.
+     * @example
+     * const sr = new SubregionRepository();
+     * const subregions = await sr.getAllSubregions({ filter: { name: 'Subregion' }, sort: { field: 'name', direction: 'asc' }, include: { region: true, count: true } });
+     * // returns { data: Subregion[], meta: { filter: SubregionFilter, orderBy: SubregionSort, total: number, rawsql: string } }
+     */
+    getAllSubregions({ filter, sort, include }: SubregionQueryOptions): Promise<{
         data: {
             countries: {
                 id: number;
                 name: string;
-                latitude: number;
-                longitude: number;
                 iso3: string;
                 iso2: string;
                 numeric_code: string;
@@ -160,10 +165,12 @@ export declare class SubregionRepository extends CommonSQLite {
                 tld: string;
                 native: string;
                 region_id: number;
+                translations: import("../utils/customtypes").TTranslation | null;
                 subregion_id: number;
                 nationality: string;
                 timezones: import("../utils/customtypes").TTimezone[] | null;
-                translations: import("../utils/customtypes").TTranslation | null;
+                latitude: number;
+                longitude: number;
                 emoji: string;
                 emojiU: string;
             }[];
@@ -194,8 +201,6 @@ export declare class SubregionRepository extends CommonSQLite {
             countries: {
                 id: number;
                 name: string;
-                latitude: number;
-                longitude: number;
                 iso3: string;
                 iso2: string;
                 numeric_code: string;
@@ -207,10 +212,12 @@ export declare class SubregionRepository extends CommonSQLite {
                 tld: string;
                 native: string;
                 region_id: number;
+                translations: import("../utils/customtypes").TTranslation | null;
                 subregion_id: number;
                 nationality: string;
                 timezones: import("../utils/customtypes").TTimezone[] | null;
-                translations: import("../utils/customtypes").TTranslation | null;
+                latitude: number;
+                longitude: number;
                 emoji: string;
                 emojiU: string;
             }[];
@@ -238,7 +245,6 @@ export declare class SubregionRepository extends CommonSQLite {
  */
     deleteSubregion(id: number): Promise<void>;
     addFilters<T extends SQLiteSelectQueryBuilder>(qb: T, filter: SubregionFilter): T;
-    getWhereOptions(filter: SubregionFilter): import("drizzle-orm").SQL<unknown> | null | undefined;
     /**
      * Counts the number of related subregions and countries for a given subregion.
      * @param {number} subregionId - The ID of the subregion.
@@ -259,8 +265,6 @@ export declare class SubregionRepository extends CommonSQLite {
         countries: {
             id: number;
             name: string;
-            latitude: number;
-            longitude: number;
             iso3: string;
             iso2: string;
             numeric_code: string;
@@ -272,10 +276,12 @@ export declare class SubregionRepository extends CommonSQLite {
             tld: string;
             native: string;
             region_id: number;
+            translations: import("../utils/customtypes").TTranslation | null;
             subregion_id: number;
             nationality: string;
             timezones: import("../utils/customtypes").TTimezone[] | null;
-            translations: import("../utils/customtypes").TTranslation | null;
+            latitude: number;
+            longitude: number;
             emoji: string;
             emojiU: string;
         }[];

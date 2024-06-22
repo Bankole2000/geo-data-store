@@ -67,7 +67,7 @@ class SubregionRepository extends Common_1.CommonSQLite {
             let query = qb.select({
                 subregion: Object.assign(Object.assign({}, this.table), ((include === null || include === void 0 ? void 0 : include.region) ? { region: schema_1.region } : {})),
             }).from(this.table).$dynamic();
-            if (filter) {
+            if (Object.keys(filter).length) {
                 query = this.addFilters(query, filter);
             }
             if (include === null || include === void 0 ? void 0 : include.region) {
@@ -86,13 +86,26 @@ class SubregionRepository extends Common_1.CommonSQLite {
             return result;
         });
     }
+    /**
+     * Retrieves all subregions with optional filtering, sorting, and inclusion of related entities.
+     * @async await (new {@link SubregionRepository}()).{@link getAllSubregions}({})
+     * @param {SubregionQueryOptions} options - {@link SubregionQueryOptions} Options for filtering, sorting, and including related entities.
+     * @param {SubregionFilter} [options.filter={}] - {@link SubregionFilter} Filtering parameters.
+     * @param {SubregionSort} [options.sort={field: 'id', direction: 'asc'}] - {@link SubregionSort} Sorting parameters.
+     * @param {SubregionInclude} [options.include={}] - {@link SubregionInclude} Parameters to include related entities (region).
+     * @returns {Promise<{ data: any[], meta: { filter: SubregionFilter, orderBy: SubregionSort, total: number, rawsql: string } }>} The subregion data along with metadata including filter, order, total count, and raw SQL query.
+     * @example
+     * const sr = new SubregionRepository();
+     * const subregions = await sr.getAllSubregions({ filter: { name: 'Subregion' }, sort: { field: 'name', direction: 'asc' }, include: { region: true, count: true } });
+     * // returns { data: Subregion[], meta: { filter: SubregionFilter, orderBy: SubregionSort, total: number, rawsql: string } }
+     */
     getAllSubregions(_a) {
         return __awaiter(this, arguments, void 0, function* ({ filter = {}, sort = { field: 'id', direction: 'asc' }, include = {} }) {
             const qb = this.db;
             let query = qb.select({
                 subregion: Object.assign(Object.assign({}, this.table), ((include === null || include === void 0 ? void 0 : include.region) ? { region: schema_1.region } : {}))
             }).from(this.table).$dynamic();
-            if (filter) {
+            if (Object.keys(filter).length) {
                 query = this.addFilters(query, filter);
             }
             if (include === null || include === void 0 ? void 0 : include.region) {
@@ -165,17 +178,14 @@ class SubregionRepository extends Common_1.CommonSQLite {
         }
         return qb;
     }
-    getWhereOptions(filter) {
-        const filterOperation = (filter === null || filter === void 0 ? void 0 : filter.operation) === 'or' ? drizzle_orm_1.or : drizzle_orm_1.and;
-        const conditions = [];
-        if (filter.name)
-            conditions.push((0, drizzle_orm_1.like)(schema_1.subregion.name, `%${filter.name}%`));
-        if (filter.wikiDataId)
-            conditions.push((0, drizzle_orm_1.eq)(schema_1.subregion.wikiDataId, filter.wikiDataId));
-        if (filter.region_id)
-            conditions.push((0, drizzle_orm_1.eq)(schema_1.subregion.region_id, filter.region_id));
-        return conditions.length ? filterOperation(...conditions) : null;
-    }
+    // getWhereOptions(filter: SubregionFilter){
+    //   const filterOperation = filter?.operation === 'or' ? or : and
+    //   const conditions: SQLWrapper[] = []
+    //   if (filter.name) conditions.push(like(subregion.name, `%${filter.name}%`))
+    //   if (filter.wikiDataId) conditions.push(eq(subregion.wikiDataId, filter.wikiDataId))
+    //   if (filter.region_id) conditions.push(eq(subregion.region_id, filter.region_id))
+    //   return conditions.length ? filterOperation(...conditions) : null;
+    // }
     /**
      * Counts the number of related subregions and countries for a given subregion.
      * @param {number} subregionId - The ID of the subregion.

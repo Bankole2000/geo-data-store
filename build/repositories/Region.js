@@ -49,14 +49,16 @@ class RegionRepository extends Common_1.CommonSQLite {
     }
     /**
      * Retrieves a paginated list of regions.
-     * @param {number} page - The page number to retrieve.
-     * @param {number} limit - The number of regions per page.
-     * @param {RegionFilter} [filter] - Filtering parameters.
-     * @param {RegionSort} [sort] - Sorting parameters.
-     * @param {RegionInclude} [include] - Sorting parameters.
+     * @async (new {@link RegionRepository}).{@link getRegions}({})
+     * @param {RegionQueryOptions & { page?: number, limit?: number,}} [options] - Region query options and pagination parameters.
+     * @param {number} [options.page] - The page number to retrieve.
+     * @param {number} [options.limit] - The number of regions per page.
+     * @param {RegionFilter} [options.filter] - Filtering parameters.
+     * @param {RegionSort} [options.sort] - Sorting parameters.
+     * @param {RegionInclude} [options.include] - Resources to include.
      * @param {boolean} [include.subregions=false] - Whether to include related subregions.
      * @param {boolean} [include.countries=false] - Whether to include related countries.
-     * @returns {Promise<Region[]>} The list of regions.
+     * @returns {Promise<{data: any[], meta: any}>} Promise<{data: Region[], meta: any}> The list of regions.
      * @example
      * const paginatedRegions = await regionRepository.getRegions(1, 10, { name: 'Region' }, { field: 'name', direction: 'asc' }, true, true);
      * console.log('Paginated Regions:', paginatedRegions);
@@ -67,7 +69,7 @@ class RegionRepository extends Common_1.CommonSQLite {
             let query = qb.select({
                 region: Object.assign({}, this.table)
             }).from(this.table).$dynamic();
-            if (filter) {
+            if (Object.keys(filter).length) {
                 query = this.addFilters(query, filter);
             }
             query = this.addPagination(query, page, limit);
@@ -79,13 +81,26 @@ class RegionRepository extends Common_1.CommonSQLite {
             return result;
         });
     }
+    /**
+     * Retrieves all regions with optional filtering, sorting, and inclusion of related entities.
+     * @async (new {@link RegionRepository}).{@link getAllRegions}({})
+     * @param {Object} [options] - {@link RegionQueryOptions} Options for filtering, sorting, and including related entities.
+     * @param {RegionFilter} [options.filter={}] - {@link RegionFilter} Filtering parameters.
+     * @param {RegionSort} [options.sort={field: 'id', direction: 'asc'}] - {@link RegionSort} Sorting parameters.
+     * @param {RegionInclude} [options.include={}] - {@link RegionInclude} Parameters to include related entities.
+     * @returns {Promise<{ data: any[], meta: { filter: RegionFilter, orderBy: RegionSort, total: number, rawsql: string } }>} The region data along with metadata including filter, order, total count, and raw SQL query.
+     * @example
+     * const rr = new RegionRepository();
+     * const regions = await rr.getAllRegions({ filter: { name: 'Region' }, sort: { field: 'name', direction: 'asc' }, include: { count: true } });
+     * // returns { data: Region[], meta: { filter: RegionFilter, orderBy: RegionSort, total: number, rawsql: string } }
+     */
     getAllRegions(_a) {
         return __awaiter(this, arguments, void 0, function* ({ filter = {}, sort = { field: 'id', direction: 'asc' }, include = {} }) {
             const qb = this.db;
             let query = qb.select({
                 region: Object.assign({}, this.table)
             }).from(this.table).$dynamic();
-            if (filter) {
+            if (Object.keys(filter).length) {
                 query = this.addFilters(query, filter);
             }
             const direction = sort.direction === 'asc' ? drizzle_orm_1.asc : drizzle_orm_1.desc;
@@ -152,15 +167,13 @@ class RegionRepository extends Common_1.CommonSQLite {
         }
         return qb;
     }
-    getWhereOptions(filter) {
-        const filterOperation = (filter === null || filter === void 0 ? void 0 : filter.operation) === 'or' ? drizzle_orm_1.or : drizzle_orm_1.and;
-        const conditions = [];
-        if (filter.name)
-            conditions.push((0, drizzle_orm_1.like)(schema_1.region.name, `%${filter.name}%`));
-        if (filter.wikiDataId)
-            conditions.push((0, drizzle_orm_1.eq)(schema_1.region.wikiDataId, filter.wikiDataId));
-        return conditions.length ? filterOperation(...conditions) : null;
-    }
+    // getWhereOptions(filter: RegionFilter){
+    //   const filterOperation = filter?.operation === 'or' ? or : and
+    //   const conditions: SQLWrapper[] = []
+    //   if (filter.name) conditions.push(like(region.name, `%${filter.name}%`))
+    //   if (filter.wikiDataId) conditions.push(eq(region.wikiDataId, filter.wikiDataId))
+    //   return filterOperation(...conditions);
+    // }
     /**
      * Counts the number of related subregions and countries for a given region.
      * @param {number} regionId - The ID of the region.

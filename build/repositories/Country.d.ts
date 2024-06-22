@@ -1,7 +1,8 @@
 import { SQLiteSelectQueryBuilder } from "drizzle-orm/sqlite-core";
+import { country } from "../db/schema";
 import { CommonSQLite } from "./Common";
-import { Country, CountryFilter, CountryInclude, CountrySort } from "../utils/customtypes";
-export declare class CountryRepository extends CommonSQLite {
+import { Country, CountryFilter, CountryInclude, CountryQueryOptions, CountrySort } from "../utils/customtypes";
+export declare class CountryRepository extends CommonSQLite<typeof country> {
     db: import("drizzle-orm/better-sqlite3").BetterSQLite3Database<typeof import("../db/schema")>;
     table: import("drizzle-orm/sqlite-core").SQLiteTableWithColumns<{
         name: "country";
@@ -274,50 +275,47 @@ export declare class CountryRepository extends CommonSQLite {
      */
     createCountry(countryData: Omit<Country, 'id'>): Promise<Country>;
     /**
-     * Retrieves a paginated list of countrys.
+     * Retrieves a paginated list of countries.
      * @param {number} page - The page number to retrieve.
-     * @param {number} limit - The number of countrys per page.
+     * @param {number} limit - The number of countries per page.
      * @param {CountryFilter} [filter] - Filtering parameters.
      * @param {CountrySort} [sort] - Sorting parameters.
      * @param {CountryInclude} [include] - Sorting parameters.
-     * @param {boolean} [include.countrys=false] - Whether to include related countrys.
-     * @param {boolean} [include.countries=false] - Whether to include related countries.
-     * @returns {Promise<Country[]>} The list of countrys.
+     * @param {boolean} [include.states=false] - Whether to include related countries.
+     * @param {boolean} [include.cities=false] - Whether to include related countries.
+     * @returns {Promise<Country[]>} The list of countries.
      * @example
-     * const paginatedCountrys = await countryRepository.getCountrys(1, 10, { name: 'Country' }, { field: 'name', direction: 'asc' }, true, true);
-     * console.log('Paginated Countrys:', paginatedCountrys);
+     * const paginatedCountries = await countryRepository.getCountries(1, 10, { name: 'Country' }, { field: 'name', direction: 'asc' }, true, true);
+     * console.log('Paginated Countries:', paginatedCountries);
      */
-    getCountrys({ page, limit, filter, sort, include }: {
+    getCountries({ page, limit, filter, sort, include }: {
         page?: number;
         limit?: number;
-        filter?: CountryFilter;
-        sort?: CountrySort;
-        include?: CountryInclude;
-    }): Promise<{
+    } & CountryQueryOptions): Promise<{
         data: {
             states: {
                 id: number;
                 name: string;
-                state_code: string;
                 country_id: number;
-                country_code: string;
-                country_name: string;
                 latitude: number;
                 longitude: number;
+                country_code: string;
+                country_name: string;
+                state_code: string;
                 type: string | null;
             }[];
             cities: {
                 id: number;
                 name: string;
                 state_id: number;
-                state_code: string;
-                state_name: string;
                 country_id: number;
-                country_code: string;
-                country_name: string;
+                wikiDataId: string | null;
                 latitude: number;
                 longitude: number;
-                wikiDataId: string | null;
+                country_code: string;
+                country_name: string;
+                state_code: string;
+                state_name: string;
             }[];
             id: number;
         }[];
@@ -331,35 +329,44 @@ export declare class CountryRepository extends CommonSQLite {
             rawsql: import("drizzle-orm").Query;
         };
     }>;
-    getAllCountrys({ filter, sort, include }: {
-        filter?: CountryFilter;
-        sort?: CountrySort;
-        include?: CountryInclude;
-    }): Promise<{
+    /**
+     * Retrieves all countries with optional filtering, sorting, and inclusion of related entities.
+     * @async await (new {@link CountryRepository}()).{@link getAllCountries}({})
+     * @param {CountryQueryOptions} options - {@link CountryQueryOptions} Options for filtering, sorting, and including related entities.
+     * @param {CountryFilter} [options.filter={}] - {@link CountryFilter} Filtering parameters.
+     * @param {CountrySort} [options.sort={field: 'id', direction: 'asc'}] - {@link CountrySort} Sorting parameters.
+     * @param {CountryInclude} [options.include={}] - {@link CountryInclude} Parameters to include related entities (region and/or subregion).
+     * @returns {Promise<{ data: any[], meta: { filter: CountryFilter, orderBy: CountrySort, total: number, rawsql: string } }>} The country data along with metadata including filter, order, total count, and raw SQL query.
+     * @example
+     * const cr = new CountryRepository();
+     * const countries = await cr.getAllCountries({ filter: { name: 'Country' }, sort: { field: 'name', direction: 'asc' }, include: { region: true, subregion: true, count: true } });
+     * // returns { data: Country[], meta: { filter: CountryFilter, orderBy: CountrySort, total: number, rawsql: string } }
+     */
+    getAllCountries({ filter, sort, include }: CountryQueryOptions): Promise<{
         data: {
             states: {
                 id: number;
                 name: string;
-                state_code: string;
                 country_id: number;
-                country_code: string;
-                country_name: string;
                 latitude: number;
                 longitude: number;
+                country_code: string;
+                country_name: string;
+                state_code: string;
                 type: string | null;
             }[];
             cities: {
                 id: number;
                 name: string;
                 state_id: number;
-                state_code: string;
-                state_name: string;
                 country_id: number;
-                country_code: string;
-                country_name: string;
+                wikiDataId: string | null;
                 latitude: number;
                 longitude: number;
-                wikiDataId: string | null;
+                country_code: string;
+                country_name: string;
+                state_code: string;
+                state_name: string;
             }[];
             id: number;
         }[];
@@ -389,26 +396,26 @@ export declare class CountryRepository extends CommonSQLite {
             states: {
                 id: number;
                 name: string;
-                state_code: string;
                 country_id: number;
-                country_code: string;
-                country_name: string;
                 latitude: number;
                 longitude: number;
+                country_code: string;
+                country_name: string;
+                state_code: string;
                 type: string | null;
             }[];
             cities: {
                 id: number;
                 name: string;
                 state_id: number;
-                state_code: string;
-                state_name: string;
                 country_id: number;
-                country_code: string;
-                country_name: string;
+                wikiDataId: string | null;
                 latitude: number;
                 longitude: number;
-                wikiDataId: string | null;
+                country_code: string;
+                country_name: string;
+                state_code: string;
+                state_name: string;
             }[];
             id: number;
         }[];
@@ -434,11 +441,10 @@ export declare class CountryRepository extends CommonSQLite {
  */
     deleteCountry(id: number): Promise<void>;
     addFilters<T extends SQLiteSelectQueryBuilder>(qb: T, filter: CountryFilter): T;
-    getWhereOptions(filter: CountryFilter): import("drizzle-orm").SQL<unknown> | null | undefined;
     /**
-     * Counts the number of related countrys and countries for a given country.
+     * Counts the number of related countries and countries for a given country.
      * @param {number} countryId - The ID of the country.
-     * @returns {Promise<{ countrysCount: number, countriesCount: number }>} The count of related countrys and countries.
+     * @returns {Promise<{ countriesCount: number, countriesCount: number }>} The count of related countries and countries.
      * @example
      * const counts = countryRepository.countRelatedEntities({region_id: 1});
      * console.log('Related Entities Count:', counts);
@@ -466,26 +472,26 @@ export declare class CountryRepository extends CommonSQLite {
         states: {
             id: number;
             name: string;
-            state_code: string;
             country_id: number;
-            country_code: string;
-            country_name: string;
             latitude: number;
             longitude: number;
+            country_code: string;
+            country_name: string;
+            state_code: string;
             type: string | null;
         }[];
         cities: {
             id: number;
             name: string;
             state_id: number;
-            state_code: string;
-            state_name: string;
             country_id: number;
-            country_code: string;
-            country_name: string;
+            wikiDataId: string | null;
             latitude: number;
             longitude: number;
-            wikiDataId: string | null;
+            country_code: string;
+            country_name: string;
+            state_code: string;
+            state_name: string;
         }[];
         id: number;
     };

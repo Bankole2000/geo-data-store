@@ -11,10 +11,20 @@ var __rest = (this && this.__rest) || function (s, e) {
     return t;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.findEntitiesWithinRadius = exports.findClosestCities = exports.findClosestCity = exports.haversine = void 0;
+exports.findEntitiesWithinRadius = exports.findClosestCities = exports.findClosestCity = exports.haversine = exports.UnitToWords = exports.EarthRadius = void 0;
 const drizzle_orm_1 = require("drizzle-orm");
 const db_1 = require("./db");
 const schema_1 = require("./db/schema");
+exports.EarthRadius = {
+    km: 6371,
+    m: 6371000,
+    mi: 3958.8,
+};
+exports.UnitToWords = {
+    km: 'kilometers',
+    m: 'meters',
+    mi: 'miles'
+};
 /**
  * Calculates the distance (in meters) between two points on the Earth's surface using the Haversine formula.
  * @function {@link haversine}
@@ -32,17 +42,17 @@ const schema_1 = require("./db/schema");
  * console.log(`Distance: ${distance} m`);
  * // returns Distance: 343.37 km (approx)
  */
-const haversine = (point1, point2) => {
+const haversine = (point1, point2, unit = 'm') => {
     const { lat: lat1, lng: lon1 } = point1;
     const { lat: lat2, lng: lon2 } = point2;
-    const R = 6371000; // Earth's radius in meters
+    const R = exports.EarthRadius[unit]; // Earth's radius in meters
     const dLat = (lat2 - lat1) * (Math.PI / 180);
     const dLon = (lon2 - lon1) * (Math.PI / 180);
     const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
         Math.cos(lat1 * (Math.PI / 180)) * Math.cos(lat2 * (Math.PI / 180)) *
             Math.sin(dLon / 2) * Math.sin(dLon / 2);
     const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-    return R * c;
+    return { distance: R * c, unit, unitInWords: exports.UnitToWords[unit] };
 };
 exports.haversine = haversine;
 /**
@@ -59,9 +69,10 @@ exports.haversine = haversine;
  * const {city, country, state} = findClosestCity(point)
  * console.log({city, country, state});
  */
-function findClosestCity(point) {
+function findClosestCity(point, unit = 'm') {
     const { lat: latitude, lng: longitude } = point;
     // Find closest cities
+    const R = exports.EarthRadius[unit];
     const closestCity = db_1.db.select({
         id: schema_1.city.id,
         name: schema_1.city.name,
@@ -75,10 +86,12 @@ function findClosestCity(point) {
         longitude: schema_1.city.longitude,
         state: schema_1.state,
         country: schema_1.country,
-        distance: (0, drizzle_orm_1.sql) `(6371 * acos(cos(radians(${latitude})) * cos(radians(${schema_1.city.latitude})) * cos(radians(${schema_1.city.longitude}) - radians(${longitude})) + sin(radians(${latitude})) * sin(radians(${schema_1.city.latitude}))))`.as('distance')
+        unitInWords: (0, drizzle_orm_1.sql) `${exports.UnitToWords[unit]}`,
+        unit: (0, drizzle_orm_1.sql) `${unit}`,
+        distance: (0, drizzle_orm_1.sql) `(${R} * acos(cos(radians(${latitude})) * cos(radians(${schema_1.city.latitude})) * cos(radians(${schema_1.city.longitude}) - radians(${longitude})) + sin(radians(${latitude})) * sin(radians(${schema_1.city.latitude}))))`.as('distance')
     }).from(schema_1.city).orderBy((0, drizzle_orm_1.sql) `distance`).limit(1).leftJoin(schema_1.state, (0, drizzle_orm_1.eq)(schema_1.state.id, schema_1.city.state_id)).leftJoin(schema_1.country, (0, drizzle_orm_1.eq)(schema_1.country.id, schema_1.city.country_id)).all();
     const _a = closestCity[0], { state: inState, country: inCountry } = _a, nearCity = __rest(_a, ["state", "country"]);
-    return Object.assign(Object.assign(Object.assign({}, (nearCity ? { city: nearCity } : {})), (inState ? { state: inState } : {})), (inCountry ? { country: inCountry } : {}));
+    return Object.assign(Object.assign(Object.assign({}, nearCity), (inState ? { state: inState } : {})), (inCountry ? { country: inCountry } : {}));
 }
 exports.findClosestCity = findClosestCity;
 /**
@@ -96,9 +109,10 @@ exports.findClosestCity = findClosestCity;
  * const {cities, countries, states} = findClosestCities(point, 5)
  * // returns City[5], State[], Country[]
  */
-function findClosestCities(point, limit) {
+function findClosestCities(point, limit, unit = 'm') {
     const { lat: latitude, lng: longitude } = point;
     // Find closest cities
+    const R = exports.EarthRadius[unit];
     const closestCities = db_1.db.select({
         id: schema_1.city.id,
         name: schema_1.city.name,
@@ -112,7 +126,9 @@ function findClosestCities(point, limit) {
         longitude: schema_1.city.longitude,
         state: schema_1.state,
         country: schema_1.country,
-        distance: (0, drizzle_orm_1.sql) `(6371 * acos(cos(radians(${latitude})) * cos(radians(${schema_1.city.latitude})) * cos(radians(${schema_1.city.longitude}) - radians(${longitude})) + sin(radians(${latitude})) * sin(radians(${schema_1.city.latitude}))))`.as('distance')
+        unitInWords: (0, drizzle_orm_1.sql) `${exports.UnitToWords[unit]}`,
+        unit: (0, drizzle_orm_1.sql) `${unit}`,
+        distance: (0, drizzle_orm_1.sql) `(${R} * acos(cos(radians(${latitude})) * cos(radians(${schema_1.city.latitude})) * cos(radians(${schema_1.city.longitude}) - radians(${longitude})) + sin(radians(${latitude})) * sin(radians(${schema_1.city.latitude}))))`.as('distance')
     }).from(schema_1.city).orderBy((0, drizzle_orm_1.sql) `distance`).limit(limit).leftJoin(schema_1.state, (0, drizzle_orm_1.eq)(schema_1.state.id, schema_1.city.state_id)).leftJoin(schema_1.country, (0, drizzle_orm_1.eq)(schema_1.country.id, schema_1.city.country_id)).all();
     const states = [...new Set(closestCities.map(({ state }) => state).map(state => JSON.stringify(state)))].map(x => JSON.parse(x));
     const countries = [...new Set(closestCities.map(({ country }) => country).map(country => JSON.stringify(country)))].map(x => JSON.parse(x));
@@ -135,9 +151,10 @@ exports.findClosestCities = findClosestCities;
  * // cities, states, and countries in a 30km radius
  * const { cities, states, countries } = findEntitiesWithinRadius({lat: 1, lng: 1}, 30)
  */
-const findEntitiesWithinRadius = (point, radius) => {
+const findEntitiesWithinRadius = (point, radius, unit = 'm') => {
     const { lat: latitude, lng: longitude } = point;
     // Find cities within radius
+    const R = exports.EarthRadius[unit];
     const cities = db_1.db.select({
         id: schema_1.city.id,
         name: schema_1.city.name,
@@ -151,7 +168,9 @@ const findEntitiesWithinRadius = (point, radius) => {
         longitude: schema_1.city.longitude,
         state: schema_1.state,
         country: schema_1.country,
-        distance: (0, drizzle_orm_1.sql) `(6371 * acos(cos(radians(${latitude})) * cos(radians(${schema_1.city.latitude})) * cos(radians(${schema_1.city.longitude}) - radians(${longitude})) + sin(radians(${latitude})) * sin(radians(${schema_1.city.latitude}))))`.as('distance')
+        unitInWords: (0, drizzle_orm_1.sql) `${exports.UnitToWords[unit]}`,
+        unit: (0, drizzle_orm_1.sql) `${unit}`,
+        distance: (0, drizzle_orm_1.sql) `(${R} * acos(cos(radians(${latitude})) * cos(radians(${schema_1.city.latitude})) * cos(radians(${schema_1.city.longitude}) - radians(${longitude})) + sin(radians(${latitude})) * sin(radians(${schema_1.city.latitude}))))`.as('distance')
     }).from(schema_1.city).where((0, drizzle_orm_1.sql) `distance <= ${radius}`).orderBy((0, drizzle_orm_1.sql) `distance`).leftJoin(schema_1.state, (0, drizzle_orm_1.eq)(schema_1.state.id, schema_1.city.state_id)).leftJoin(schema_1.country, (0, drizzle_orm_1.eq)(schema_1.country.id, schema_1.city.country_id)).all();
     const states = [...new Set(cities.map(({ state }) => state).map(state => JSON.stringify(state)))].map(x => JSON.parse(x));
     const countries = [...new Set(cities.map(({ country }) => country).map(country => JSON.stringify(country)))].map(x => JSON.parse(x));

@@ -48,26 +48,26 @@ class CountryRepository extends Common_1.CommonSQLite {
         });
     }
     /**
-     * Retrieves a paginated list of countrys.
+     * Retrieves a paginated list of countries.
      * @param {number} page - The page number to retrieve.
-     * @param {number} limit - The number of countrys per page.
+     * @param {number} limit - The number of countries per page.
      * @param {CountryFilter} [filter] - Filtering parameters.
      * @param {CountrySort} [sort] - Sorting parameters.
      * @param {CountryInclude} [include] - Sorting parameters.
-     * @param {boolean} [include.countrys=false] - Whether to include related countrys.
-     * @param {boolean} [include.countries=false] - Whether to include related countries.
-     * @returns {Promise<Country[]>} The list of countrys.
+     * @param {boolean} [include.states=false] - Whether to include related countries.
+     * @param {boolean} [include.cities=false] - Whether to include related countries.
+     * @returns {Promise<Country[]>} The list of countries.
      * @example
-     * const paginatedCountrys = await countryRepository.getCountrys(1, 10, { name: 'Country' }, { field: 'name', direction: 'asc' }, true, true);
-     * console.log('Paginated Countrys:', paginatedCountrys);
+     * const paginatedCountries = await countryRepository.getCountries(1, 10, { name: 'Country' }, { field: 'name', direction: 'asc' }, true, true);
+     * console.log('Paginated Countries:', paginatedCountries);
      */
-    getCountrys(_a) {
+    getCountries(_a) {
         return __awaiter(this, arguments, void 0, function* ({ page = 1, limit = 10, filter = {}, sort = { field: 'id', direction: 'asc' }, include = {} }) {
             const qb = this.db;
             let query = qb.select({
                 country: Object.assign(Object.assign(Object.assign({}, this.table), ((include === null || include === void 0 ? void 0 : include.region) ? { region: schema_1.region } : {})), ((include === null || include === void 0 ? void 0 : include.subregion) ? { subregion: schema_1.subregion } : {})),
             }).from(this.table).$dynamic();
-            if (filter) {
+            if (Object.keys(filter).length) {
                 query = this.addFilters(query, filter);
             }
             if (include === null || include === void 0 ? void 0 : include.region) {
@@ -86,13 +86,26 @@ class CountryRepository extends Common_1.CommonSQLite {
             return result;
         });
     }
-    getAllCountrys(_a) {
+    /**
+     * Retrieves all countries with optional filtering, sorting, and inclusion of related entities.
+     * @async await (new {@link CountryRepository}()).{@link getAllCountries}({})
+     * @param {CountryQueryOptions} options - {@link CountryQueryOptions} Options for filtering, sorting, and including related entities.
+     * @param {CountryFilter} [options.filter={}] - {@link CountryFilter} Filtering parameters.
+     * @param {CountrySort} [options.sort={field: 'id', direction: 'asc'}] - {@link CountrySort} Sorting parameters.
+     * @param {CountryInclude} [options.include={}] - {@link CountryInclude} Parameters to include related entities (region and/or subregion).
+     * @returns {Promise<{ data: any[], meta: { filter: CountryFilter, orderBy: CountrySort, total: number, rawsql: string } }>} The country data along with metadata including filter, order, total count, and raw SQL query.
+     * @example
+     * const cr = new CountryRepository();
+     * const countries = await cr.getAllCountries({ filter: { name: 'Country' }, sort: { field: 'name', direction: 'asc' }, include: { region: true, subregion: true, count: true } });
+     * // returns { data: Country[], meta: { filter: CountryFilter, orderBy: CountrySort, total: number, rawsql: string } }
+     */
+    getAllCountries(_a) {
         return __awaiter(this, arguments, void 0, function* ({ filter = {}, sort = { field: 'id', direction: 'asc' }, include = {} }) {
             const qb = this.db;
             let query = qb.select({
                 country: Object.assign(Object.assign(Object.assign({}, this.table), ((include === null || include === void 0 ? void 0 : include.region) ? { region: schema_1.region } : {})), ((include === null || include === void 0 ? void 0 : include.subregion) ? { subregion: schema_1.subregion } : {}))
             }).from(this.table).$dynamic();
-            if (filter) {
+            if (Object.keys(filter).length) {
                 query = this.addFilters(query, filter);
             }
             if (include === null || include === void 0 ? void 0 : include.region) {
@@ -175,45 +188,10 @@ class CountryRepository extends Common_1.CommonSQLite {
         }
         return qb;
     }
-    getWhereOptions(filter) {
-        const filterOperation = (filter === null || filter === void 0 ? void 0 : filter.operation) === 'or' ? drizzle_orm_1.or : drizzle_orm_1.and;
-        const conditions = [];
-        if (filter.name)
-            conditions.push((0, drizzle_orm_1.like)(schema_1.country.name, `%${filter.name}%`));
-        if (filter.nationality)
-            conditions.push((0, drizzle_orm_1.like)(schema_1.country.nationality, `%${filter.nationality}%`));
-        if (filter.currency_name)
-            conditions.push((0, drizzle_orm_1.like)(schema_1.country.currency_name, `%${filter.currency_name}%`));
-        if (filter.native)
-            conditions.push((0, drizzle_orm_1.like)(schema_1.country.native, `%${filter.native}%`));
-        if (filter.capital)
-            conditions.push((0, drizzle_orm_1.like)(schema_1.country.capital, `%${filter.capital}%`));
-        if (filter.iso2)
-            conditions.push((0, drizzle_orm_1.eq)(schema_1.country.iso2, filter.iso2));
-        if (filter.iso3)
-            conditions.push((0, drizzle_orm_1.eq)(schema_1.country.iso3, filter.iso3));
-        if (filter.numeric_code)
-            conditions.push((0, drizzle_orm_1.eq)(schema_1.country.numeric_code, filter.numeric_code));
-        if (filter.currency)
-            conditions.push((0, drizzle_orm_1.eq)(schema_1.country.currency, filter.currency));
-        if (filter.currency_symbol)
-            conditions.push((0, drizzle_orm_1.eq)(schema_1.country.currency_symbol, filter.currency_symbol));
-        if (filter.tld)
-            conditions.push((0, drizzle_orm_1.eq)(schema_1.country.tld, filter.tld));
-        if (filter.region_id)
-            conditions.push((0, drizzle_orm_1.eq)(schema_1.country.region_id, filter.region_id));
-        if (filter.subregion_id)
-            conditions.push((0, drizzle_orm_1.eq)(schema_1.country.subregion_id, filter.subregion_id));
-        if (filter.region_id)
-            conditions.push((0, drizzle_orm_1.eq)(schema_1.country.region_id, filter.region_id));
-        if (filter.id)
-            conditions.push((0, drizzle_orm_1.eq)(schema_1.country.id, filter.id));
-        return conditions.length ? filterOperation(...conditions) : null;
-    }
     /**
-     * Counts the number of related countrys and countries for a given country.
+     * Counts the number of related countries and countries for a given country.
      * @param {number} countryId - The ID of the country.
-     * @returns {Promise<{ countrysCount: number, countriesCount: number }>} The count of related countrys and countries.
+     * @returns {Promise<{ countriesCount: number, countriesCount: number }>} The count of related countries and countries.
      * @example
      * const counts = countryRepository.countRelatedEntities({region_id: 1});
      * console.log('Related Entities Count:', counts);
@@ -232,7 +210,6 @@ class CountryRepository extends Common_1.CommonSQLite {
             .all();
         const stateCount = stateCountResult[0].count;
         const cityCount = cityCountResult[0].count;
-        console.log(stateCount, cityCount);
         return Object.assign(Object.assign({ id }, rest), { stateCount, cityCount });
     }
     /**

@@ -5,7 +5,7 @@ import { city, country, state } from "../db/schema";
 import { CommonSQLite } from "./Common";
 import { City, CityFilter, CityInclude, CityQueryOptions, CitySort } from "../utils/customtypes";
 
-export class CityRepository extends CommonSQLite {
+export class CityRepository extends CommonSQLite<typeof city> {
   db = db
   table = city
   
@@ -62,7 +62,7 @@ export class CityRepository extends CommonSQLite {
         ...(include?.country ? {country} : {})
       },
     }).from(this.table).$dynamic();
-    if (filter) {
+    if (Object.keys(filter).length) {
       query = this.addFilters(query, filter)
     }
     if(include?.country){
@@ -80,6 +80,19 @@ export class CityRepository extends CommonSQLite {
     return result
   }
 
+/**
+ * Retrieves all cities with optional filtering, sorting, and inclusion of related entities.
+ * @async new {@link CityRepository}.{@link getAllCities}({})
+ * @param {CityQueryOptions} options - {@link CityQueryOptions} Options for filtering, sorting, and including related entities.
+ * @param {CityFilter} [options.filter={}] - {@link CityFilter} Filtering parameters.
+ * @param {CitySort} [options.sort={field: 'id', direction: 'asc'}] - {@link CitySort} Sorting parameters.
+ * @param {CityInclude} [options.include={}] - {@link CityInclude} Parameters to include related entities (country and/or state).
+ * @returns {Promise<{ data: any[], meta: { filter: CityFilter, orderBy: CitySort, total: number, rawsql: string } }>} The city data along with metadata including filter, order, total count, and raw SQL query.
+ * @example
+ * const cr = new CityRepository();
+ * const cities = await cr.getAllCities({ filter: { name: 'City' }, sort: { field: 'name', direction: 'asc' }, include: { country: true, state: true } });
+ * // returns { data: City[], meta: { filter: CityFilter, orderBy: CitySort, total: number, rawsql: string } }
+ */
   async getAllCities({filter={}, sort = {field: 'id', direction: 'asc'}, include = {}}: CityQueryOptions){
     const qb = this.db;
     let query = qb.select({
@@ -89,7 +102,7 @@ export class CityRepository extends CommonSQLite {
         ...(include?.state ? {state} : {}) 
       }
     }).from(this.table).$dynamic();
-    if (filter) {
+    if (Object.keys(filter).length) {
       query = this.addFilters(query, filter)
     }
     if(include?.country){
@@ -170,20 +183,27 @@ export class CityRepository extends CommonSQLite {
     return qb
   }
 
-  getWhereOptions(filter: CityFilter){
-    const filterOperation = filter?.operation === 'or' ? or : and
-    const conditions: SQLWrapper[] = []
-    if (filter.name) conditions.push(like(city.name, `%${filter.name}%`))
-    if (filter.state_name) conditions.push(like(city.state_name, `%${filter.state_name}%`))
-    if (filter.country_name) conditions.push(like(city.country_name, `%${filter.country_name}%`))
-    if (filter.wikiDataId) conditions.push(like(city.wikiDataId, `%${filter.wikiDataId}%`))
-    if (filter.id) conditions.push(eq(city.id, filter.id))
-    if (filter.country_id) conditions.push(eq(city.country_id, filter.country_id))
-    if (filter.state_id) conditions.push(eq(city.state_id, filter.state_id))
-    if (filter.state_code) conditions.push(eq(city.state_code, filter.state_code))
-    if (filter.country_code) conditions.push(eq(city.country_code, filter.country_code))
-    return conditions.length ? filterOperation(...conditions) : null;
-  }
+  // getWhereOptions(filter: CityFilter | CityFilter[]){
+  //   if (!Array.isArray(filter)){
+  //     const filterOperation = filter?.operation === 'or' ? or : and
+  //     const conditions: SQLWrapper[] = []
+  //     if (filter.name) conditions.push(like(city.name, `%${filter.name}%`))
+  //     if (filter.state_name) conditions.push(like(city.state_name, `%${filter.state_name}%`))
+  //     if (filter.country_name) conditions.push(like(city.country_name, `%${filter.country_name}%`))
+  //     if (filter.wikiDataId) conditions.push(like(city.wikiDataId, `%${filter.wikiDataId}%`))
+  //     if (filter.id) conditions.push(eq(city.id, filter.id))
+  //     if (filter.country_id) conditions.push(eq(city.country_id, filter.country_id))
+  //     if (filter.state_id) conditions.push(eq(city.state_id, filter.state_id))
+  //     if (filter.state_code) conditions.push(eq(city.state_code, filter.state_code))
+  //     if (filter.country_code) conditions.push(eq(city.country_code, filter.country_code))
+  //     if (filter.subfilters) conditions.push(this.getWhereOptions(filter.subfilters)!)
+  //     return filterOperation(...conditions);
+  //   } else {
+  //     filter.forEach(f => {
+        
+  //     })
+  //   }
+  // }
 }
 
 export const cityRepository = new CityRepository()

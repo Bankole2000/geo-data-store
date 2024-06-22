@@ -3,6 +3,17 @@ import { db } from "./db";
 import { city, state, country } from "./db/schema";
 import { GeoPoint } from "./utils/customtypes";
 
+export const EarthRadius = {
+  km: 6371,
+  m: 6371000,
+  mi: 3958.8,
+} as const
+
+export const UnitToWords = {
+  km: 'kilometers',
+  m: 'meters',
+  mi: 'miles'
+} as const
 /**
  * Calculates the distance (in meters) between two points on the Earth's surface using the Haversine formula.
  * @function {@link haversine}
@@ -20,10 +31,10 @@ import { GeoPoint } from "./utils/customtypes";
  * console.log(`Distance: ${distance} m`);
  * // returns Distance: 343.37 km (approx)
  */
-export const haversine = (point1: GeoPoint, point2: GeoPoint): number => {
+export const haversine = (point1: GeoPoint, point2: GeoPoint, unit: keyof typeof EarthRadius = 'm'): {distance: number, unit: string, unitInWords: string} => {
   const {lat: lat1, lng: lon1} = point1
   const {lat: lat2, lng: lon2} = point2
-  const R = 6371000; // Earth's radius in meters
+  const R = EarthRadius[unit]; // Earth's radius in meters
   const dLat = (lat2 - lat1) * (Math.PI / 180);
   const dLon = (lon2 - lon1) * (Math.PI / 180);
   const a = 
@@ -31,7 +42,7 @@ export const haversine = (point1: GeoPoint, point2: GeoPoint): number => {
     Math.cos(lat1 * (Math.PI / 180)) * Math.cos(lat2 * (Math.PI / 180)) *
     Math.sin(dLon / 2) * Math.sin(dLon / 2);
   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-  return R * c;
+  return {distance: R * c, unit, unitInWords: UnitToWords[unit]};
 }
 
 /**
@@ -48,9 +59,10 @@ export const haversine = (point1: GeoPoint, point2: GeoPoint): number => {
  * const {city, country, state} = findClosestCity(point)
  * console.log({city, country, state});
  */
-export function findClosestCity(point: GeoPoint): { city?: any, state?: any, country?: any } {
+export function findClosestCity(point: GeoPoint, unit: keyof typeof EarthRadius = 'm'): { city?: any, state?: any, country?: any } {
   const {lat: latitude, lng: longitude} = point
   // Find closest cities
+  const R = EarthRadius[unit];
   const closestCity = db.select({
     id: city.id,
     name: city.name,
@@ -64,13 +76,15 @@ export function findClosestCity(point: GeoPoint): { city?: any, state?: any, cou
     longitude: city.longitude,
     state,
     country,
-    distance: sql`(6371 * acos(cos(radians(${latitude})) * cos(radians(${city.latitude})) * cos(radians(${city.longitude}) - radians(${longitude})) + sin(radians(${latitude})) * sin(radians(${city.latitude}))))`.as('distance')
+    unitInWords: sql`${UnitToWords[unit]}`,
+    unit: sql`${unit}`,
+    distance: sql`(${R} * acos(cos(radians(${latitude})) * cos(radians(${city.latitude})) * cos(radians(${city.longitude}) - radians(${longitude})) + sin(radians(${latitude})) * sin(radians(${city.latitude}))))`.as('distance')
   }).from(city).orderBy(sql`distance`).limit(1).leftJoin(state, eq(state.id, city.state_id)).leftJoin(country, eq(country.id, city.country_id)).all();
 
   const {state: inState, country: inCountry, ...nearCity} = closestCity[0]
 
   return {
-    ...(nearCity ? {city: nearCity} : {}),
+    ...nearCity,
     ...(inState ? {state: inState} : {}),
     ...(inCountry ? {country: inCountry} : {}),
   };
@@ -91,9 +105,10 @@ export function findClosestCity(point: GeoPoint): { city?: any, state?: any, cou
  * const {cities, countries, states} = findClosestCities(point, 5)
  * // returns City[5], State[], Country[]
  */
-export function findClosestCities(point: GeoPoint, limit: number) {
+export function findClosestCities(point: GeoPoint, limit: number, unit: keyof typeof EarthRadius = 'm') {
   const {lat: latitude, lng: longitude} = point
   // Find closest cities
+  const R = EarthRadius[unit];
   const closestCities = db.select({
     id: city.id,
     name: city.name,
@@ -107,7 +122,9 @@ export function findClosestCities(point: GeoPoint, limit: number) {
     longitude: city.longitude,
     state,
     country,
-    distance: sql`(6371 * acos(cos(radians(${latitude})) * cos(radians(${city.latitude})) * cos(radians(${city.longitude}) - radians(${longitude})) + sin(radians(${latitude})) * sin(radians(${city.latitude}))))`.as('distance')
+    unitInWords: sql`${UnitToWords[unit]}`,
+    unit: sql`${unit}`,
+    distance: sql`(${R} * acos(cos(radians(${latitude})) * cos(radians(${city.latitude})) * cos(radians(${city.longitude}) - radians(${longitude})) + sin(radians(${latitude})) * sin(radians(${city.latitude}))))`.as('distance')
   }).from(city).orderBy(sql`distance`).limit(limit).leftJoin(state, eq(state.id, city.state_id)).leftJoin(country, eq(country.id, city.country_id)).all();
 
   const states = [...new Set(closestCities.map(({state}) => state).map(state => JSON.stringify(state)))].map(x => JSON.parse(x))
@@ -129,9 +146,10 @@ export function findClosestCities(point: GeoPoint, limit: number) {
  * // cities, states, and countries in a 30km radius
  * const { cities, states, countries } = findEntitiesWithinRadius({lat: 1, lng: 1}, 30)
  */
- export const findEntitiesWithinRadius = (point: GeoPoint, radius: number) => {
+ export const findEntitiesWithinRadius = (point: GeoPoint, radius: number, unit: keyof typeof EarthRadius = 'm') => {
   const {lat: latitude, lng: longitude} = point;
   // Find cities within radius
+  const R = EarthRadius[unit];
   const cities = db.select({
     id: city.id,
     name: city.name,
@@ -145,7 +163,9 @@ export function findClosestCities(point: GeoPoint, limit: number) {
     longitude: city.longitude,
     state,
     country,
-    distance: sql`(6371 * acos(cos(radians(${latitude})) * cos(radians(${city.latitude})) * cos(radians(${city.longitude}) - radians(${longitude})) + sin(radians(${latitude})) * sin(radians(${city.latitude}))))`.as('distance')
+    unitInWords: sql`${UnitToWords[unit]}`,
+    unit: sql`${unit}`,
+    distance: sql`(${R} * acos(cos(radians(${latitude})) * cos(radians(${city.latitude})) * cos(radians(${city.longitude}) - radians(${longitude})) + sin(radians(${latitude})) * sin(radians(${city.latitude}))))`.as('distance')
   }).from(city).where(sql`distance <= ${radius}`).orderBy(sql`distance`).leftJoin(state, eq(state.id, city.state_id)).leftJoin(country, eq(country.id, city.country_id)).all();
   const states = [...new Set(cities.map(({state}) => state).map(state => JSON.stringify(state)))].map(x => JSON.parse(x))
   const countries = [...new Set(cities.map(({country}) => country).map(country => JSON.stringify(country)))].map(x => JSON.parse(x))
