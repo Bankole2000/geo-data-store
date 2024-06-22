@@ -226,7 +226,7 @@ import {
  >
  > - To _create_, _update_, or _delete_ records, use the Class Repositories
  > - To use filter operations other than `eq` or `like` (e.g. `lte`, `gte`, `not` etc) use the `db` instance
- > - To conveniently count related records (in __1-n__ relationships) use the classRepository
+ > - To conveniently count related records (in **1-n** relationships) use the classRepository
  > - To run custom _SQL_ queries, or if you're very familiar with Drizzle orm, use the `db` instance
 
 ## Data structures
@@ -298,11 +298,12 @@ type City = {
     state_name: string; // same as State.name
 }
 ```
+
 Other Utility Types:
 
 | Name | Structure        | Description         |
 |------|------------------|---------------------|
-| `GeoPoint`  | `{lat: number, lng: number}` | Single geolocation coordinate            | 
+| `GeoPoint`  | `{lat: number, lng: number}` | Single geolocation coordinate            |
 |`DistanceUnit` | one of `km`, `m`, `mi` |Kilometers, meters or miles|
 |`BoundingBox` |`{topLeft: GeoPoint, bottomRight: GeoPoint}` |Coordinates of a rectangulat area |
 |`Vector` | `{angle: number, distance: number, unit: DistanceUnit, unitInWords?: string}` | Unit of distance with angular direction |
@@ -328,7 +329,7 @@ Other Utility Types:
 - _**isWithinRadius**_ - Checks if a given `GeoPoint` is within a specified radius from a center `GeoPoint`
 - _**isWithinPolygon**_ - Given a `GeoPoint` _X_ and list of `GeoPoint[]`s _Y_ that make a polygon, check if _X_ is withing polygon _Y_, returns true or false. Polygon must have at least 3 sides
 
-#### Examples
+### Examples
 
 ```ts
 import { 
