@@ -15,7 +15,7 @@ var __exportStar = (this && this.__exportStar) || function(m, exports) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.RegionRepository = exports.regionRepository = exports.subregionRelations = exports.subregion = exports.stateRelations = exports.state = exports.regionRelations = exports.countryRelations = exports.country = exports.cityRelations = exports.city = exports.region = exports.db = exports.SUMDISTINCT = exports.SUM = exports.OR = exports.MIN = exports.MAX = exports.ISNULL = exports.ISNOTNULL = exports.ILIKE = exports.NOTILIKE = exports.NOTLIKE = exports.NOTBETWEEN = exports.NOTEXISTS = exports.EXISTS = exports.CREATEONE = exports.CREATEMANY = exports.BETWEEN = exports.ARRAYCONTAINED = exports.NOTINARRAY = exports.INARRAY = exports.ARRAYOVERLAPS = exports.ARRAYCONTAINS = exports.LIKE = exports.AND = exports.AVGDISTINCT = exports.AVG = exports.COUNTDISTINCT = exports.COUNT = exports.DESC = exports.ASC = exports.NOT = exports.SQL = exports.NE = exports.GTE = exports.GT = exports.LTE = exports.LT = exports.EQ = void 0;
-exports.calculateDistance = exports.findEntitiesWithinRadius = exports.findClosestCity = exports.findClosestCities = exports.CityRepository = exports.cityRepository = exports.StateRepository = exports.stateRepository = exports.CountryRepository = exports.countryRepository = exports.SubregionRepository = exports.subregionRepository = void 0;
+exports.UnitToWords = exports.EarthRadius = exports.tupleToGeoPoint = exports.geoPointToTuple = exports.getMidwayPoint = exports.isWithinRadius = exports.isWithinPolygon = exports.isWithinBoundingBox = exports.calculateVectorDistance = exports.moveCoordsTo = exports.getBoundingBox = exports.calculateDistance = exports.findEntitiesWithinRadius = exports.findClosestCity = exports.findClosestCities = exports.CityRepository = exports.cityRepository = exports.StateRepository = exports.stateRepository = exports.CountryRepository = exports.countryRepository = exports.SubregionRepository = exports.subregionRepository = void 0;
 var drizzle_orm_1 = require("drizzle-orm");
 Object.defineProperty(exports, "EQ", { enumerable: true, get: function () { return drizzle_orm_1.eq; } });
 Object.defineProperty(exports, "LT", { enumerable: true, get: function () { return drizzle_orm_1.lt; } });
@@ -87,4 +87,15 @@ Object.defineProperty(exports, "findClosestCities", { enumerable: true, get: fun
 Object.defineProperty(exports, "findClosestCity", { enumerable: true, get: function () { return geolocationFxns_1.findClosestCity; } });
 Object.defineProperty(exports, "findEntitiesWithinRadius", { enumerable: true, get: function () { return geolocationFxns_1.findEntitiesWithinRadius; } });
 Object.defineProperty(exports, "calculateDistance", { enumerable: true, get: function () { return geolocationFxns_1.haversine; } });
+Object.defineProperty(exports, "getBoundingBox", { enumerable: true, get: function () { return geolocationFxns_1.getBoundingBox; } });
+Object.defineProperty(exports, "moveCoordsTo", { enumerable: true, get: function () { return geolocationFxns_1.moveCoordsTo; } });
+Object.defineProperty(exports, "calculateVectorDistance", { enumerable: true, get: function () { return geolocationFxns_1.calculateVectorDistance; } });
+Object.defineProperty(exports, "isWithinBoundingBox", { enumerable: true, get: function () { return geolocationFxns_1.isWithinBoundingBox; } });
+Object.defineProperty(exports, "isWithinPolygon", { enumerable: true, get: function () { return geolocationFxns_1.isWithinPolygon; } });
+Object.defineProperty(exports, "isWithinRadius", { enumerable: true, get: function () { return geolocationFxns_1.isWithinRadius; } });
+Object.defineProperty(exports, "getMidwayPoint", { enumerable: true, get: function () { return geolocationFxns_1.getMidwayPoint; } });
+Object.defineProperty(exports, "geoPointToTuple", { enumerable: true, get: function () { return geolocationFxns_1.geoPointToTuple; } });
+Object.defineProperty(exports, "tupleToGeoPoint", { enumerable: true, get: function () { return geolocationFxns_1.tupleToGeoPoint; } });
+Object.defineProperty(exports, "EarthRadius", { enumerable: true, get: function () { return geolocationFxns_1.EarthRadius; } });
+Object.defineProperty(exports, "UnitToWords", { enumerable: true, get: function () { return geolocationFxns_1.UnitToWords; } });
 __exportStar(require("./utils/customtypes"), exports);
