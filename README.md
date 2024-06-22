@@ -13,7 +13,7 @@ A Collection of utility functions, classes and data to help with building geoloc
 
 Usable on any **nodejs** project with either JavaScript or Typescript on the frontend or backend.
 
-> [!IMPORTANT] Important
+> [!NOTE] Important
 > To use, download this [**`sqlite.db`**](https://github.com/Bankole2000/geo-data-store/blob/main/sqlite.db) raw file from [this repo](https://github.com/Bankole2000/geo-data-store) and place at the root of your project, then install the package
 
 ```sh
