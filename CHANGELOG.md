@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.7](https://github.com/Bankole2000/geo-data-store/compare/v0.0.6...v0.0.7) (2024-06-22)
+
+
+### 📝 Documentation
+
+* updated readme ([129d546](https://github.com/Bankole2000/geo-data-store/commits/129d546e5d49d8f42f3d6b9c7e9be3bd64787b08))
+
 ### [0.0.6](https://github.com/Bankole2000/geo-data-store/compare/v0.0.5...v0.0.6) (2024-06-22)
 
 
